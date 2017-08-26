@@ -1,0 +1,8 @@
+﻿name: DeathWait
+main: me.alan.deathwait.Core
+version: 4.0
+author: AlanKuan
+
+commands:
+  dw:
+    description: DeathWait的指令
