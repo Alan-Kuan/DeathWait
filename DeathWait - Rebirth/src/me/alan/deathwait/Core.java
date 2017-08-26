@@ -18,7 +18,6 @@ import me.alan.deathwait.nms.v1_10_R1;
 import me.alan.deathwait.nms.v1_11_R1;
 import me.alan.deathwait.nms.v1_12_R1;
 
-
 /*************************
 
 	備註: 如果擔心Essentials的重生系統影響到，可在Essentials將respawn-listener-priority:設為lowest
