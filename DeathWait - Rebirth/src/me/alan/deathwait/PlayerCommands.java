@@ -89,7 +89,7 @@ public class PlayerCommands implements CommandExecutor{
 			nms.sendCommand(p, "§b/dw hereitem [<數量>] - 獲得原地復活道具 ", "/dw hereitem");
 			nms.sendCommand(p, "§b/dw check - 查詢剩餘幾次免等額度 ", "/dw check");
 			p.sendMessage(ChatColor.AQUA + "" + ChatColor.STRIKETHROUGH + "                                                ");
-						
+			
 		}else if(args[0].equals("reload")){
 	        	
 			if(args.length > 1){

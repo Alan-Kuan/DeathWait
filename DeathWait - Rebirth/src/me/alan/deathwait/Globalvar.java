@@ -44,6 +44,7 @@ public class Globalvar {
 	public List<Player> isghost = new ArrayList<Player>();
 	public HashMap<Player, Integer> ids = new HashMap<Player, Integer>();
 	public HashMap<Player, Integer> limit_ids = new HashMap<Player, Integer>();
+	public HashMap<Player, Integer> wait = new HashMap<Player, Integer>();
 	public HashMap<Entity, Player> targetentity = new HashMap<Entity, Player>();
 	/************************************************************************************/
 
@@ -63,11 +64,7 @@ public class Globalvar {
 	}
 	
 	public boolean isNoChoose(Player p){
-		if(nochoose.contains(p)){
-			return true;
-		}else{
-			return false;
-		}
+		return nochoose.contains(p);
 	}
 	public void addNoChoose(Player p){
 		nochoose.add(p);
@@ -77,11 +74,7 @@ public class Globalvar {
 	}
 	
 	public boolean hasTurnedPage(Player p){
-		if(turnpage.contains(p)){
-			return true;
-		}else{
-			return false;
-		}
+		return turnpage.contains(p);
 	}
 	public void addTurnPage(Player p){
 		turnpage.add(p);
@@ -91,11 +84,7 @@ public class Globalvar {
 	}
 	
 	public boolean isKilled(Player p){
-		if(killed.contains(p)){
-			return true;
-		}else{
-			return false;
-		}
+		return killed.contains(p);
 	}
 	public void addKilled(Player p){
 		killed.add(p);
@@ -105,11 +94,7 @@ public class Globalvar {
 	}
 	
 	public boolean isGhost(Player p){
-		if(isghost.contains(p)){
-			return true;
-		}else{
-			return false;
-		}
+		return isghost.contains(p);
 	}
 	public void addGhost(Player p){
 		isghost.add(p);
@@ -119,11 +104,7 @@ public class Globalvar {
 	}
 	
 	public boolean hasIds(Player p){
-		if(ids.containsKey(p)){
-			return true;
-		}else{
-			return false;
-		}
+		return ids.containsKey(p);
 	}
 	public int getIds(Player p){
 		return ids.get(p);
@@ -139,11 +120,7 @@ public class Globalvar {
 		return limit_ids.get(p);
 	}
 	public boolean haveChoosingCountingDownId(Player p){
-		if(limit_ids.containsKey(p)){
-			return true;
-		}else{
-			return false;
-		}
+		return limit_ids.containsKey(p);
 	}
 	public void giveChoosingCountingDownId(Player p, int id){
 		if(limit_ids.containsKey(p)){
@@ -156,6 +133,24 @@ public class Globalvar {
 		limit_ids.remove(p);
 	}
 		
+	public boolean hasLeftWaitingTimes(Player p){
+		return wait.containsKey(p);
+	}
+	public int getLeftWaitingTimes(Player p){
+		return wait.get(p);
+	}
+	public void setLeftWaitingTimes(Player p, int time){
+		if(wait.containsKey(p)){
+			wait.replace(p, time);
+		}else{
+			wait.put(p, time);
+		}
+	}
+	public void removeLeftWaitingTimes(Player p){
+		wait.remove(p);
+	}
+	
+	
 	public boolean isTargetEntity(Entity target){
 		if(targetentity.containsKey(target)){
 			return true;

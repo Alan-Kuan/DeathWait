@@ -350,16 +350,7 @@ public class PlayerFunctions {
 		if(core.version.equals("v1_10_R1")){
 			p.getPassenger().remove();
 		}else{
-			
-			for(Entity passenger : p.getPassengers()){
-				
-				if(passenger.getCustomName().equals(p.getName())){
-					passenger.remove();
-					break;
-				}
-				
-			}
-			
+			p.getPassengers().get(0).remove();
 		}
 		
 	}

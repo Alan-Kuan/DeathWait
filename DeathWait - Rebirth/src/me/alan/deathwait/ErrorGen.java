@@ -35,7 +35,7 @@ public class ErrorGen {
 		}
 		error = YamlConfiguration.loadConfiguration(errorfile);
 
-		error.set(LocalDateTime.now()+"", warn);
+		error.set(LocalDateTime.now().toString(), warn);
 		try{
 			error.save(errorfile);
 		}catch(Exception e){

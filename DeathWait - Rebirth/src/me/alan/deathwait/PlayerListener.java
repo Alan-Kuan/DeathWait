@@ -219,13 +219,15 @@ public class PlayerListener implements Listener{
 	    	    
 	    //惠璶单
 	    if(needwait){
-	    			    
+	    	
 		    int countdown = core.getServer().getScheduler().scheduleSyncRepeatingTask(core, new Runnable(){
 		     
 		    	int wait = config.getConfig().getInt("config.wait seconds") + 1;
 		    	
 		    	@Override
 		    	public void run(){
+		    		
+		    		GV.setLeftWaitingTimes(p, wait);
 		    		
 		    		if(wait > 0){
 		    			wait--;
@@ -245,7 +247,7 @@ public class PlayerListener implements Listener{
 		    	}
 		    	
 		    }, 0L, 20L);
-		    GV.setIds(p, Integer.valueOf(countdown));
+		    GV.setIds(p, countdown);
 		    
 	    }else{
 	    	
@@ -283,12 +285,22 @@ public class PlayerListener implements Listener{
 	    
 	    //狦癶產琌艶
 	    if(GV.isGhost(p)){
-	    	p.setGameMode(GV.getGameMode(p));
+
+			//pfunc.removeNameTag(p);
+	    	
+	    	data.set("players." + p.getUniqueId() + ".gamemode", GV.getGameMode(p).toString());
+	    	
+	    	if(GV.hasLeftWaitingTimes(p)){
+		    	core.getServer().getScheduler().cancelTask(GV.getIds(p));
+		    	data.set("players." + p.getUniqueId() + ".left waiting times", GV.getLeftWaitingTimes(p));
+		    	
+		    	GV.removeLeftWaitingTimes(p);
+		    	GV.removeIds(p);
+	    	}
+
 	    	GV.removeGameMode(p);
 			GV.removeGhost(p);
 			GV.removeKilled(p);
-			
-			pfunc.removeNameTag(p);
 			
 			if(GV.isInTargetEntity(p)){
 				for(Entity target: GV.getTargetEntities()){
@@ -298,63 +310,64 @@ public class PlayerListener implements Listener{
 					}
 				}
 			}
-			
-	    	data.set("players." + p.getUniqueId() + ".have to wait", true);
 	    }
 	    
 	}
 	//狦单祅Ω祅璶穝单
 	@EventHandler
 	public void onJoin(PlayerJoinEvent e){
-		
+				
 		Player p = e.getPlayer();
 		
-		boolean have_to_wait = data.getConfig().getBoolean("players." + p.getUniqueId() + ".have to wait");
-		boolean canmove = config.getConfig().getBoolean("config.can move");
+		boolean have_to_wait = data.getConfig().isSet("players." + p.getUniqueId() + ".left waiting times");
 		
 		if(have_to_wait){
 			
-			data.set("players." + p.getUniqueId() + ".have to wait", false);
+			boolean canmove = config.getConfig().getBoolean("config.can move");
 			
 			GV.addGhost(p);
-			GV.setGameMode(p, p.getGameMode());
-			p.setGameMode(GameMode.SPECTATOR);
+			GV.setGameMode(p, GameMode.valueOf(data.getConfig().getString("players." + p.getUniqueId() + ".gamemode")));
+						
+			data.set("players." + p.getUniqueId() + ".gamemode", null);
 			
 			if(canmove){
 				p.setFlySpeed(0.1f);
 			}else{
 				p.setFlySpeed(0);
 			}
-			
+						
 			//陪ボ兵		    
 		    pfunc.setNameTag(p);
 		    
 			int countdown = core.getServer().getScheduler().scheduleSyncRepeatingTask(core, new Runnable(){
-			     
-		    	int wait = config.getConfig().getInt("config.wait seconds") + 1;
-		    	
+			    
+				int left = data.getConfig().getInt("players." + p.getUniqueId() + ".left waiting times");
+				
 		    	@Override
 		    	public void run(){
+		    				    		
+		    		GV.setLeftWaitingTimes(p, left);
 		    		
-		    		if(wait > 0){
-		    			wait--;
+		    		if(left > 0){
+		    			left--;
 
-		    			if(wait != 0){
-		    				String show = wait + "確";
+		    			if(left != 0){
+		    				String show = left + "確";
 		            
 		    				nms.sendSubTitle(p, ChatColor.GOLD + show);
-		    				nms.sendTitle(p, ChatColor.RED + "パΩ单祅┮ゲ斗穝单");
+		    				nms.sendTitle(p, ChatColor.RED + "パΩ单祅┮ゲ斗膥尿单");
 		    			}
 		    		}else{
 		    			core.getServer().getScheduler().cancelTask(GV.getIds(p));
 		    			GV.removeIds(p);
+		    			data.set("players." + p.getUniqueId() + ".left waiting times", null);
 		    			pfunc.Respawn(p);
 		    		}
 		    		
 		    	}
 		    	
 		    }, 0L, 20L);
-		    GV.setIds(p, Integer.valueOf(countdown));
+		    GV.setIds(p, countdown);
 			
 		}
 		
