@@ -169,9 +169,9 @@ public class PlayerListener implements Listener{
 	    }
 	    
 	    if(canmove){
-	    	p.setFlySpeed(0.1F);
+	    	p.setFlySpeed(0.1f);
 	    }else{
-	    	p.setFlySpeed(0.0F);
+	    	p.setFlySpeed(0);
 	    }
 	    
 	    if(food){
@@ -313,7 +313,7 @@ public class PlayerListener implements Listener{
 	    }
 	    
 	}
-	//如果在等待時登出，下次登入時要重新等待
+	//如果在等待時登出，下次登入時要繼續等待
 	@EventHandler
 	public void onJoin(PlayerJoinEvent e){
 				
@@ -330,45 +330,49 @@ public class PlayerListener implements Listener{
 						
 			data.set("players." + p.getUniqueId() + ".gamemode", null);
 			
-			if(canmove){
-				p.setFlySpeed(0.1f);
-			}else{
-				p.setFlySpeed(0);
-			}
-						
 			//顯示名條		    
 		    pfunc.setNameTag(p);
 		    
-			int countdown = core.getServer().getScheduler().scheduleSyncRepeatingTask(core, new Runnable(){
+			int countdown = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(core, new Runnable(){
 			    
 				int left = data.getConfig().getInt("players." + p.getUniqueId() + ".left waiting times");
 				
 		    	@Override
 		    	public void run(){
-		    				    		
+		    		
+		    		if(canmove){
+						p.setFlySpeed(0.1f);
+					}else{
+						p.setFlySpeed(0);
+					}
+		    		
 		    		GV.setLeftWaitingTimes(p, left);
 		    		
 		    		if(left > 0){
+		    			
 		    			left--;
 
 		    			if(left != 0){
 		    				String show = left + "秒後復活";
-		            
+		    				
 		    				nms.sendSubTitle(p, ChatColor.GOLD + show);
 		    				nms.sendTitle(p, ChatColor.RED + "由於上次在等待時登出，所以必須繼續等待");
+		    				
 		    			}
+		    			
 		    		}else{
+		    			
 		    			core.getServer().getScheduler().cancelTask(GV.getIds(p));
 		    			GV.removeIds(p);
 		    			data.set("players." + p.getUniqueId() + ".left waiting times", null);
 		    			pfunc.Respawn(p);
+		    			
 		    		}
 		    		
 		    	}
 		    	
 		    }, 0L, 20L);
-		    GV.setIds(p, countdown);
-			
+		    GV.setIds(p, countdown);		    
 		}
 		
 	}
@@ -394,7 +398,7 @@ public class PlayerListener implements Listener{
 	    
 	    if(!GV.hasTurnedPage(p)){
 	    	
-	    	if(gui.getTitle().equals(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "所有復活點") && GV.isNoChoose(p)){
+	    	if(gui.getTitle().equals(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "所有復活點") && GV.didNotChoose(p)){
 	    	    
 	    		try{
 	    			
@@ -468,7 +472,7 @@ public class PlayerListener implements Listener{
 	    //回到自然重生點
 	    if((click.equals(ClickType.LEFT)) && (slot == 27) && (name.equals(ChatColor.DARK_GREEN + "自然重生點"))){
 		    
-	    	if(GV.isNoChoose(p)){
+	    	if(GV.didNotChoose(p)){
 		    	pfunc.removeNameTag(p);
 	    		GV.removeNoChoose(p);
 	    	}
@@ -621,7 +625,7 @@ public class PlayerListener implements Listener{
 	    //傳送至復活點
 	    if((click.equals(ClickType.LEFT)) && (slot <= 26)){
 	    	
-	    	if(GV.isNoChoose(p)){
+	    	if(GV.didNotChoose(p)){
 	    		pfunc.removeNameTag(p);
 	    		GV.removeNoChoose(p);
 	    	}
@@ -745,6 +749,7 @@ public class PlayerListener implements Listener{
 	    			return;
 	    		}
 	    		
+	    		//將多個連續的空格變成一個
 	    		int i;
 	    		if(name.contains(" ")){
 	    			String[] l = name.split(" ");
@@ -882,7 +887,7 @@ public class PlayerListener implements Listener{
     					
 	    				if(GV.isGhost(entp) && (!GV.isInTargetEntity(entp))){
 	    					
-	    					if(GV.isNoChoose(entp)){
+	    					if(GV.didNotChoose(entp)){
 	    						GV.removeNoChoose(entp);
 	    						entp.closeInventory();
 	    					}

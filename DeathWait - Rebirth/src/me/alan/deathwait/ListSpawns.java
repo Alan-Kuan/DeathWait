@@ -200,7 +200,7 @@ public class ListSpawns {
 	    			Location loc = p.getLocation();
 	    			
 	    			//如果還沒選復活點，顯示倒數
-	    			if(GV.isNoChoose(p)){
+	    			if(GV.didNotChoose(p)){
 	    				
 	    				ItemStack watch = im.createItem(Material.WATCH, 0, ChatColor.DARK_RED + "你還剩" + wait + "秒做選擇", lore, false);
 						

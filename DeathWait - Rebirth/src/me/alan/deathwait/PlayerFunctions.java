@@ -121,7 +121,7 @@ public class PlayerFunctions {
 		    	    		public void run(){
 		    	    	    	p.teleport(loc);
 		    	    	    	
-		    	    		    if(!GV.isNoChoose(p)){
+		    	    		    if(!GV.didNotChoose(p)){
 		    	    		    	TurnBack(p);
 		    	    		    }
 		    	    		}
@@ -219,7 +219,7 @@ public class PlayerFunctions {
 			    	public void run(){
 						p.teleport(loc);
 						
-					    if(!GV.isNoChoose(p)){
+					    if(!GV.didNotChoose(p)){
 					    	TurnBack(p);
 					    }
 					    
@@ -245,7 +245,7 @@ public class PlayerFunctions {
 	    		public void run(){
 	    			p.teleport(p.getBedSpawnLocation());
 					
-				    if(!GV.isNoChoose(p)){
+				    if(!GV.didNotChoose(p)){
 				    	TurnBack(p);
 				    }
 	    		}
@@ -269,7 +269,7 @@ public class PlayerFunctions {
 	    		public void run(){
 	    			p.teleport(new Location(p.getWorld(), x, y, z));
 					
-				    if(!GV.isNoChoose(p)){
+				    if(!GV.didNotChoose(p)){
 				    	TurnBack(p);
 				    }
 	    		}
@@ -350,7 +350,15 @@ public class PlayerFunctions {
 		if(core.version.equals("v1_10_R1")){
 			p.getPassenger().remove();
 		}else{
-			p.getPassengers().get(0).remove();
+
+			for(Entity passenger : p.getPassengers()){
+				
+				if(passenger.getCustomName().equals(p.getName())){
+					passenger.remove();
+				}
+				
+			}
+			
 		}
 		
 	}

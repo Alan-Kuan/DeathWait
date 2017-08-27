@@ -63,7 +63,7 @@ public class Globalvar {
 		gamemode.remove(p);
 	}
 	
-	public boolean isNoChoose(Player p){
+	public boolean didNotChoose(Player p){
 		return nochoose.contains(p);
 	}
 	public void addNoChoose(Player p){
