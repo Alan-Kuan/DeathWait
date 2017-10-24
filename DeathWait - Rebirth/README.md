@@ -1,11 +1,11 @@
-# DeathWait¦º¤`µ¥«İ
+ï»¿# DeathWaitæ­»äº¡ç­‰å¾…
 a Minecraft Spigot plugin
 
-³o¬O¤@­Ó¬°Minecraft Spigot¦øªA¾¹³]­pªº¦º¤`¨t²Î´¡¥ó
+é€™æ˜¯ä¸€å€‹ç‚ºMinecraft Spigotä¼ºæœå™¨è¨­è¨ˆçš„æ­»äº¡ç³»çµ±æ’ä»¶
 
-¡I§ó·s¤¤¡I
+ï¼æ›´æ–°ä¸­ï¼
 
-Author: ¤p®¦AlanKuan
+Author: å°æ©AlanKuan
 
 Version: 4.0
 
