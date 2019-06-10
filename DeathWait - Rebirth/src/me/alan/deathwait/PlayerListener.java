@@ -56,7 +56,7 @@ public class PlayerListener implements Listener{
 	String Header = ChatColor.GOLD + "[DeathWait]";
 	
 	private Core core;
-	private ErrorGen err;
+	private WarningGen warn;
 	private Config config;
 	private Spawns spawns;
 	private Data data;
@@ -71,7 +71,7 @@ public class PlayerListener implements Listener{
 		
 		this.core = core;
 		
-		err = new ErrorGen(core);
+		warn = new WarningGen(core);
 		config = core.getConfigClass();
 		spawns = core.getSpawnsClass();
 		data = core.getDataClass();
@@ -417,7 +417,7 @@ public class PlayerListener implements Listener{
 	    		}catch(NumberFormatException ex){
 	    			
 	    			ex.printStackTrace();
-	    			err.error("在獲取目前所在頁數時出了問題");
+	    			warn.Warn("在獲取目前所在頁數時出了問題");
 	    			
 	    		}
 	    		
@@ -508,7 +508,7 @@ public class PlayerListener implements Listener{
 	    			
 	    	}catch(NumberFormatException ex){
 	    		ex.printStackTrace();
-	    		err.error("在獲取目前所在頁數時出了問題");
+	    		warn.Warn("在獲取目前所在頁數時出了問題");
 	    	}
 	    }
 	    	
@@ -532,7 +532,7 @@ public class PlayerListener implements Listener{
 	    			
 	    	}catch(NumberFormatException ex){
 	    		ex.printStackTrace();
-	    		err.error("在獲取目前所在頁數或總頁數時出了問題");
+	    		warn.Warn("在獲取目前所在頁數或總頁數時出了問題");
 	    	}
 	    }
 	    	
@@ -565,7 +565,7 @@ public class PlayerListener implements Listener{
 	    			list.List(p, nowat);
 	    		}catch(NumberFormatException ex){
 	    			ex.printStackTrace();
-	    			err.error("在獲取目前所在頁數時出了問題");
+	    			warn.Warn("在獲取目前所在頁數時出了問題");
 	    		}
 	    		p.sendMessage(Header + ChatColor.DARK_RED + "已將復活點 §f§l[§r" + name + "§f§l] " + ChatColor.RESET + ChatColor.DARK_RED + "移除!");
 	    	}

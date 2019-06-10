@@ -34,7 +34,7 @@ import me.alan.deathwait.nms.v1_12_R1;
 
 public class Core extends JavaPlugin {
 
-	private ErrorGen err;
+	private WarningGen warn;
 	private Globalvar GV;
 	private Config config;
 	private Data data;
@@ -48,7 +48,7 @@ public class Core extends JavaPlugin {
 	
 	public void onEnable(){
 		
-		if(!issetup()){
+		if(!IsSetup()){
 			Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "[DeathWait]" + "伺服器版本或開服程式與DeathWait不相容!");
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
@@ -60,7 +60,7 @@ public class Core extends JavaPlugin {
 			}
 		}catch (SecurityException e){
 			e.printStackTrace();
-	        err.error("在啟動插件時為了產生DeathWait資料夾而出了問題");
+	        warn.Warn("在啟動插件時為了產生DeathWait資料夾而出了問題");
 		}
 		
 		if(version.equals("v1_10_R1")){
@@ -74,7 +74,7 @@ public class Core extends JavaPlugin {
 			nms = new v1_12_R1();
 		}
 		
-		err = new ErrorGen(this);
+		warn = new WarningGen(this);
 		GV = new Globalvar();
 		config = new Config(this);
 		data = new Data(this);
@@ -92,7 +92,9 @@ public class Core extends JavaPlugin {
 		}
 		
 		Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[DeathWait] V" + getDescription().getVersion() + "已啟動! " + ChatColor.DARK_AQUA + "by小恩AlanKuan");
-	      
+	    
+		warn.Warn("Just for testing");
+		
 		//顯示靈魂
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable(){
 			
@@ -112,7 +114,7 @@ public class Core extends JavaPlugin {
 	   
 	}
 	  
-	private boolean issetup(){
+	private boolean IsSetup(){
 		String ver = Bukkit.getVersion();
 		
 	    if(!ver.contains("Spigot")){
@@ -120,9 +122,9 @@ public class Core extends JavaPlugin {
 	    }
 	    
 	    try{
-	    	version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-	    }catch (ArrayIndexOutOfBoundsException whatVersionAreYouUsingException){
-	    	err.error("在取得伺服器版本時出了問題");
+	    	version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+	    }catch (ArrayIndexOutOfBoundsException e){
+	    	warn.Warn("在取得伺服器版本時出了問題");
 	    	return false;
 	    }
 	    

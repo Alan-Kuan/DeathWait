@@ -7,21 +7,21 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import me.alan.deathwait.Core;
-import me.alan.deathwait.ErrorGen;
+import me.alan.deathwait.WarningGen;
 
 
 public class Spawns {
 
 	private FileConfiguration spawns;
 	private File file;
-	private ErrorGen err;
+	private WarningGen warn;
 	private Core core;
 	
 	public Spawns(Core core){
 		
 		this.core = core;
 		
-		err = new ErrorGen(core);
+		warn = new WarningGen(core);
 		
 		file = new File(core.getDataFolder(), "spawns.yml");
 		try{
@@ -30,7 +30,7 @@ public class Spawns {
 			}
 		}catch(Exception e){
 			e.printStackTrace();
-			err.error("在生成spawns.yml時出了問題");
+			warn.Warn("在生成spawns.yml時出了問題");
 		}
 		
 		spawns = new YamlConfiguration();
@@ -57,14 +57,14 @@ public class Spawns {
 			}
 		}catch(Exception e){
 			e.printStackTrace();
-			err.error("在生成spawns.yml時出了問題");
+			warn.Warn("在生成spawns.yml時出了問題");
 		}
 		
 		try{
 			spawns.load(file);
 		}catch(Exception e){
 			e.printStackTrace();
-			err.error("在讀取spawns.yml時出了問題");
+			warn.Warn("在讀取spawns.yml時出了問題");
 		}
 	}
 	
@@ -74,7 +74,7 @@ public class Spawns {
 			spawns.save(file);
 		}catch(IOException e){
 			e.printStackTrace();
-			err.error("在儲存spawns.yml時出了問題");
+			warn.Warn("在儲存spawns.yml時出了問題");
 		}
 	}
 		

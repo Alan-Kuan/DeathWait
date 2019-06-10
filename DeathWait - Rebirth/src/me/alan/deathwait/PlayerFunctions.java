@@ -34,7 +34,7 @@ public class PlayerFunctions {
 	private Spawns spawns;
 	private NMS nms;
 	private ListSpawns list;
-	private ErrorGen err;
+	private WarningGen warn;
 	private Globalvar GV;
 	
 	public PlayerFunctions(Core core){
@@ -45,7 +45,7 @@ public class PlayerFunctions {
 		spawns = core.getSpawnsClass();
 		nms = core.getNMSClass();
 		list = new ListSpawns(core, this);
-		err = new ErrorGen(core);
+		warn = new WarningGen(core);
 		GV = core.getGlobalvarClass();
 		
 	}
@@ -88,7 +88,7 @@ public class PlayerFunctions {
 	    	    			id = Integer.parseInt(idstr);
 	    	    		}catch(NumberFormatException ex){
 	    	    			ex.printStackTrace();
-	    	    			err.error("你在" + p.getName() + "的權限設定上出現dw.respawn." + idstr + "的情形");
+	    	    			warn.Warn("你在" + p.getName() + "的權限設定上出現dw.respawn." + idstr + "的情形");
 	    	    			continue;
 	    	    		}
 	    				
@@ -104,13 +104,13 @@ public class PlayerFunctions {
 	    			
 	    			if(spawns.getConfig().getInt("last ID") < id){
 		    			tpNormalSpawnPoint(p);
-		    			err.error(p.getName() + "的權限 dw.respawn." + idstr + "的ID不存在");
+		    			warn.Warn(p.getName() + "的權限 dw.respawn." + idstr + "的ID不存在");
 		    		}else if(loc == null){
 		    			tpNormalSpawnPoint(p);
-		    			err.error(p.getName() + "的權限 dw.respawn." + idstr + "的ID對應之座標已遺失或不存在");
+		    			warn.Warn(p.getName() + "的權限 dw.respawn." + idstr + "的ID對應之座標已遺失或不存在");
 		    		}else if(core.getServer().getWorld(loc.getWorld().getName()) == null){
 		    			tpNormalSpawnPoint(p);
-		    			err.error(p.getName() + "的權限  dw.respawn." + idstr + "的ID對應之世界在此伺服中已遺失或不存在");
+		    			warn.Warn(p.getName() + "的權限  dw.respawn." + idstr + "的ID對應之世界在此伺服中已遺失或不存在");
 		    		}else{
 						removeNameTag(p);
 
@@ -199,7 +199,7 @@ public class PlayerFunctions {
 						yaw = user.getHome(home).getYaw();
 						pitch = user.getHome(home).getPitch();
 					}catch(Exception e){
-						err.error("在讀取" + p.getName() + "擁有的家時出了問題");
+						warn.Warn("在讀取" + p.getName() + "擁有的家時出了問題");
 						e.printStackTrace();
 					}
 					

@@ -6,20 +6,20 @@ import java.io.IOException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import me.alan.deathwait.Core;
-import me.alan.deathwait.ErrorGen;
+import me.alan.deathwait.WarningGen;
 
 public class Config {
 	
 	private FileConfiguration config;
 	private File file;
-	private ErrorGen err;
+	private WarningGen warn;
 	private Core core;
 	
 	public Config(Core core){
 		
 		this.core = core;
 		
-		err = new ErrorGen(core);
+		warn = new WarningGen(core);
 		
 		file = new File(core.getDataFolder(), "config.yml");
 		try{
@@ -27,7 +27,7 @@ public class Config {
 			core.saveResource("config.yml", false);
 		}catch (Exception e){
 			e.printStackTrace();
-			err.error("在生成config.yml時出了問題");
+			warn.Warn("在生成config.yml時出了問題");
 		}
 		
 		config = new YamlConfiguration();
@@ -47,14 +47,14 @@ public class Config {
 			core.saveResource("config.yml", false);
 		}catch (Exception e){
 			e.printStackTrace();
-			err.error("在生成config.yml時出了問題");
+			warn.Warn("在生成config.yml時出了問題");
 		}
 		
 		try{
 			config.load(file);
 		}catch(Exception e){
 			e.printStackTrace();
-			err.error("在讀取config.yml時出了問題");
+			warn.Warn("在讀取config.yml時出了問題");
 		}
 	}
 	
@@ -64,7 +64,7 @@ public class Config {
 			config.save(file);
 		}catch(IOException e){
 			e.printStackTrace();
-			err.error("在儲存config.yml時出了問題");
+			warn.Warn("在儲存config.yml時出了問題");
 		}
 	}
 	

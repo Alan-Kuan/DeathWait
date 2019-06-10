@@ -7,20 +7,20 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import me.alan.deathwait.Core;
-import me.alan.deathwait.ErrorGen;
+import me.alan.deathwait.WarningGen;
 
 public class Data {
 
 	private FileConfiguration data;
 	private File file;
-	private ErrorGen err;
+	private WarningGen warn;
 	private Core core;
 	
 	public Data(Core core){
 		
 		this.core = core;
 		
-		err = new ErrorGen(core);
+		warn = new WarningGen(core);
 		
 		file = new File(core.getDataFolder(), "data.yml");
 		try{
@@ -29,7 +29,7 @@ public class Data {
 			}
 		}catch(Exception e){
 			e.printStackTrace();
-			err.error("在生成data.yml時出了問題");
+			warn.Warn("在生成data.yml時出了問題");
 		}
 		
 		data = new YamlConfiguration();
@@ -56,14 +56,14 @@ public class Data {
 			}
 		}catch(Exception e){
 			e.printStackTrace();
-			err.error("在生成data.yml時出了問題");
+			warn.Warn("在生成data.yml時出了問題");
 		}
 		
 		try{
 			data.load(file);
 		}catch(Exception e){
 			e.printStackTrace();
-			err.error("在讀取data.yml時出了問題");
+			warn.Warn("在讀取data.yml時出了問題");
 		}
 	}
 	
@@ -73,7 +73,7 @@ public class Data {
 			data.save(file);
 		}catch(IOException e){
 			e.printStackTrace();
-			err.error("在儲存data.yml時出了問題");
+			warn.Warn("在儲存data.yml時出了問題");
 		}
 	}
 		
