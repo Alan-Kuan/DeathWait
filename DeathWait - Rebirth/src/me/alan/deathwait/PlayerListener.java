@@ -53,10 +53,7 @@ import me.alan.deathwait.nms.NMS;
 
 public class PlayerListener implements Listener{
 
-	String Header = ChatColor.GOLD + "[DeathWait]";
-	
 	private Core core;
-	private WarningGen warn;
 	private Config config;
 	private Spawns spawns;
 	private Data data;
@@ -64,14 +61,12 @@ public class PlayerListener implements Listener{
 	private PlayerFunctions pfunc;
 	private AnvilGUI anvil;
 	private NMS nms;
-	private Globalvar GV;
 	private ItemMaker im;
 	
 	public PlayerListener(Core core){
 		
 		this.core = core;
 		
-		warn = new WarningGen(core);
 		config = core.getConfigClass();
 		spawns = core.getSpawnsClass();
 		data = core.getDataClass();
@@ -79,7 +74,6 @@ public class PlayerListener implements Listener{
 		list = new ListSpawns(core, pfunc);
 		anvil = core.getAnvilGUIClass();
 		nms = core.getNMSClass();
-		GV = core.getGlobalvarClass();
 		im = new ItemMaker();
 		
 	}
@@ -94,14 +88,14 @@ public class PlayerListener implements Listener{
 	    final Player p = e.getEntity();
 	    
 	    String keepinv = p.getWorld().getGameRuleValue("keepInventory");
-	    boolean effect = config.getConfig().getBoolean("config.remove effects");
-	    boolean xp = config.getConfig().getBoolean("config.lose XP");
-	    boolean view = config.getConfig().getBoolean("config.killer view");
-	    boolean canmove = config.getConfig().getBoolean("config.can move");
-	    boolean food = config.getConfig().getBoolean("config.reset food level");
+	    boolean remove_effect = config.getConfig().getBoolean("config.remove effects after death");
+	    boolean lose_xp = config.getConfig().getBoolean("config.lose XP after death");
+	    boolean enable_killer_view = config.getConfig().getBoolean("config.enable killer view");
+	    boolean allow_moving = config.getConfig().getBoolean("config.allow moving in ghost mode");
+	    boolean reset_food_level = config.getConfig().getBoolean("config.reset food level after death");
 	    
-	    GV.setGameMode(p, p.getGameMode());;
-	    GV.addGhost(p);
+	    Global.setGameMode(p, p.getGameMode());
+	    Global.addGhost(p);
 	    p.setHealth(pfunc.getMaxHealth(p));
 	    p.setVelocity(new Vector(0, 0, 0));
 	    e.getDrops().clear();
@@ -113,29 +107,28 @@ public class PlayerListener implements Listener{
 	    p.teleport(p.getLocation());
 	    
 	    //自殺
-	    if(GV.isKilled(p)){
+	    if(Global.isKilled(p)){
 	    	e.setDeathMessage(p.getName() + " 已死亡");
-	    	GV.removeKilled(p);
+	    	Global.removeKilled(p);
 	    }
 	    
 	    //若掉進虛空
-	    double x;
-	    if((p.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.VOID)) && (p.getLocation().getY() < 0.0D)){
+	    if((p.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.VOID)) && (p.getLocation().getY() < 0.0)){
 	    	World w = p.getWorld();
-	    	x = p.getLocation().getX();
+	    	double x = p.getLocation().getX();
 	    	double z = p.getLocation().getZ();
 	    	
-	    	p.teleport(new Location(w, x, -2.0D, z));
+	    	p.teleport(new Location(w, x, -2.0, z));
 	    }
 	    
 	    //清除藥水效果
-	    if(effect){
+	    if(remove_effect){
 	    	for(PotionEffect ef : p.getActivePotionEffects()){
 	    		p.removePotionEffect(ef.getType());
 	    	}
 	    }
 	    
-	    if(xp){
+	    if(lose_xp){
 	    	int exp = p.getLevel() * 7;
 	      
 	    	if(exp > 0){
@@ -152,7 +145,7 @@ public class PlayerListener implements Listener{
 	    
 	    p.setGameMode(GameMode.SPECTATOR);
 	    
-	    if(view && (p.getLastDamageCause() instanceof EntityDamageByEntityEvent)){
+	    if(enable_killer_view && (p.getLastDamageCause() instanceof EntityDamageByEntityEvent)){
 	    	
 	    	EntityDamageByEntityEvent edbee = (EntityDamageByEntityEvent) p.getLastDamageCause();
 	    	Entity killer = edbee.getDamager();
@@ -160,21 +153,21 @@ public class PlayerListener implements Listener{
 	    	
 	    	if((shooter != null) && (!killer.equals(shooter)) && (!p.equals(shooter))){
 	    		nms.setSpectate(p, shooter);
-	    		GV.addTargetEntity(shooter, p);
+	    		Global.addTargetEntity(shooter, p);
 	    	}else if((killer.equals(shooter)) && (!(killer instanceof Creeper)) && (!(killer instanceof EnderCrystal)) && (!(killer instanceof FallingBlock)) && (!(killer instanceof TNTPrimed)) && (!(killer instanceof ExplosiveMinecart))){
 	    		nms.setSpectate(p, killer);
-	    		GV.addTargetEntity(shooter, p);
+	    		Global.addTargetEntity(shooter, p);
 	    	}
 	    	
 	    }
 	    
-	    if(canmove){
+	    if(allow_moving){
 	    	p.setFlySpeed(0.1f);
 	    }else{
 	    	p.setFlySpeed(0);
 	    }
 	    
-	    if(food){
+	    if(reset_food_level){
 	    	p.setFoodLevel(20);
 	    }
 	    
@@ -222,12 +215,12 @@ public class PlayerListener implements Listener{
 	    	
 		    int countdown = core.getServer().getScheduler().scheduleSyncRepeatingTask(core, new Runnable(){
 		     
-		    	int wait = config.getConfig().getInt("config.wait seconds") + 1;
+		    	int wait = config.getConfig().getInt("config.waiting seconds") + 1;
 		    	
 		    	@Override
 		    	public void run(){
 		    		
-		    		GV.setLeftWaitingTimes(p, wait);
+		    		Global.setLeftWaitingTimes(p, wait);
 		    		
 		    		if(wait > 0){
 		    			wait--;
@@ -235,19 +228,19 @@ public class PlayerListener implements Listener{
 		    			if(wait != 0){
 		    				String show = wait + "秒後復活";
 		            
-		    				nms.sendSubTitle(p, ChatColor.GOLD + show);
+		    				nms.sendSubTitle(p, ChatColor.GOLD + show, 0, 25, 0);
 		    				nms.sendTitle(p, ChatColor.RED + "你已經死了");
 		    			}
 		    		}else{
-		    			core.getServer().getScheduler().cancelTask(GV.getIds(p));
-		    			GV.removeIds(p);
+		    			core.getServer().getScheduler().cancelTask(Global.getIds(p));
+		    			Global.removeIds(p);
 		    			pfunc.Respawn(p);
 		    		}
 		    		
 		    	}
 		    	
 		    }, 0L, 20L);
-		    GV.setIds(p, countdown);
+		    Global.setIds(p, countdown);
 		    
 	    }else{
 	    	
@@ -263,10 +256,10 @@ public class PlayerListener implements Listener{
 		
 	    Entity ent = e.getEntity();
 	    
-	    if(GV.isTargetEntity(ent)){
-	    	Player p = (Player) GV.getPlayerInTargetEntity(ent);
+	    if(Global.isTargetEntity(ent)){
+	    	Player p = (Player) Global.getPlayerInTargetEntity(ent);
 	    	nms.setSpectate(p, p);
-	    	GV.removeTargetEntity(ent, p);
+	    	Global.removeTargetEntity(ent, p);
 	    }
 	}
 	
@@ -276,37 +269,37 @@ public class PlayerListener implements Listener{
 		Player p = e.getPlayer();
 				
 		//如果退出的玩家裡面有其他玩家的靈魂，靈魂被釋放
-	    if(GV.isTargetEntity(p)){
-	    	Player victim = (Player) GV.getPlayerInTargetEntity(p);
+	    if(Global.isTargetEntity(p)){
+	    	Player victim = (Player) Global.getPlayerInTargetEntity(p);
 	    	
 	    	nms.setSpectate(victim, victim);
-	    	GV.removeTargetEntity(p, victim);
+	    	Global.removeTargetEntity(p, victim);
 	    }
 	    
 	    //如果退出的玩家是幽靈
-	    if(GV.isGhost(p)){
+	    if(Global.isGhost(p)){
 
 			//pfunc.removeNameTag(p);
 	    	
-	    	data.set("players." + p.getUniqueId() + ".gamemode", GV.getGameMode(p).toString());
+	    	data.set("players." + p.getUniqueId() + ".gamemode", Global.getGameMode(p).toString());
 	    	
-	    	if(GV.hasLeftWaitingTimes(p)){
-		    	core.getServer().getScheduler().cancelTask(GV.getIds(p));
-		    	data.set("players." + p.getUniqueId() + ".left waiting times", GV.getLeftWaitingTimes(p));
+	    	if(Global.hasLeftWaitingTimes(p)){
+		    	core.getServer().getScheduler().cancelTask(Global.getIds(p));
+		    	data.set("players." + p.getUniqueId() + ".left waiting times", Global.getLeftWaitingTimes(p));
 		    	
-		    	GV.removeLeftWaitingTimes(p);
-		    	GV.removeIds(p);
+		    	Global.removeLeftWaitingTimes(p);
+		    	Global.removeIds(p);
 	    	}
 
-	    	GV.removeGameMode(p);
-			GV.removeGhost(p);
-			GV.removeKilled(p);
+	    	Global.removeGameMode(p);
+			Global.removeGhost(p);
+			Global.removeKilled(p);
 			
-			if(GV.isInTargetEntity(p)){
-				for(Entity target: GV.getTargetEntities()){
+			if(Global.isInTargetEntity(p)){
+				for(Entity target: Global.getTargetEntities()){
 
-					if(GV.getPlayerInTargetEntity(target).equals(p)){
-						GV.removeTargetEntity(target, p);
+					if(Global.getPlayerInTargetEntity(target).equals(p)){
+						Global.removeTargetEntity(target, p);
 					}
 				}
 			}
@@ -323,10 +316,10 @@ public class PlayerListener implements Listener{
 		
 		if(have_to_wait){
 			
-			boolean canmove = config.getConfig().getBoolean("config.can move");
+			boolean allow_moving = config.getConfig().getBoolean("config.allow moving in ghost mode");
 			
-			GV.addGhost(p);
-			GV.setGameMode(p, GameMode.valueOf(data.getConfig().getString("players." + p.getUniqueId() + ".gamemode")));
+			Global.addGhost(p);
+			Global.setGameMode(p, GameMode.valueOf(data.getConfig().getString("players." + p.getUniqueId() + ".gamemode")));
 						
 			data.set("players." + p.getUniqueId() + ".gamemode", null);
 			
@@ -340,13 +333,13 @@ public class PlayerListener implements Listener{
 		    	@Override
 		    	public void run(){
 		    		
-		    		if(canmove){
+		    		if(allow_moving){
 						p.setFlySpeed(0.1f);
 					}else{
 						p.setFlySpeed(0);
 					}
 		    		
-		    		GV.setLeftWaitingTimes(p, left);
+		    		Global.setLeftWaitingTimes(p, left);
 		    		
 		    		if(left > 0){
 		    			
@@ -355,15 +348,15 @@ public class PlayerListener implements Listener{
 		    			if(left != 0){
 		    				String show = left + "秒後復活";
 		    				
-		    				nms.sendSubTitle(p, ChatColor.GOLD + show);
+		    				nms.sendSubTitle(p, ChatColor.GOLD + show, 0, 25, 0);
 		    				nms.sendTitle(p, ChatColor.RED + "由於上次在等待時登出，所以必須繼續等待");
 		    				
 		    			}
 		    			
 		    		}else{
 		    			
-		    			core.getServer().getScheduler().cancelTask(GV.getIds(p));
-		    			GV.removeIds(p);
+		    			core.getServer().getScheduler().cancelTask(Global.getIds(p));
+		    			Global.removeIds(p);
 		    			data.set("players." + p.getUniqueId() + ".left waiting times", null);
 		    			pfunc.Respawn(p);
 		    			
@@ -372,7 +365,7 @@ public class PlayerListener implements Listener{
 		    	}
 		    	
 		    }, 0L, 20L);
-		    GV.setIds(p, countdown);		    
+		    Global.setIds(p, countdown);		    
 		}
 		
 	}
@@ -383,7 +376,7 @@ public class PlayerListener implements Listener{
 		
 	    Player p = e.getPlayer();
 	    
-		if(GV.isGhost(p)){
+		if(Global.isGhost(p)){
 			e.setCancelled(true);
 	    }
 		
@@ -396,9 +389,9 @@ public class PlayerListener implements Listener{
 	    final Player p = (Player) e.getPlayer();
 	    Inventory gui = e.getInventory();
 	    
-	    if(!GV.hasTurnedPage(p)){
+	    if(!Global.hasTurnedPage(p)){
 	    	
-	    	if(gui.getTitle().equals(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "所有復活點") && GV.didNotChoose(p)){
+	    	if(gui.getTitle().equals(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "所有復活點") && Global.didNotChoose(p)){
 	    	    
 	    		try{
 	    			
@@ -417,14 +410,14 @@ public class PlayerListener implements Listener{
 	    		}catch(NumberFormatException ex){
 	    			
 	    			ex.printStackTrace();
-	    			warn.Warn("在獲取目前所在頁數時出了問題");
+	    			WarningGen.Warn("在獲取目前所在頁數時出了問題");
 	    			
 	    		}
 	    		
 	    	}
 	    	
 	    }else{
-	    	GV.removeTurnPage(p);
+	    	Global.removeTurnPage(p);
 	    }
 	}
 	
@@ -472,9 +465,9 @@ public class PlayerListener implements Listener{
 	    //回到自然重生點
 	    if((click.equals(ClickType.LEFT)) && (slot == 27) && (name.equals(ChatColor.DARK_GREEN + "自然重生點"))){
 		    
-	    	if(GV.didNotChoose(p)){
+	    	if(Global.didNotChoose(p)){
 		    	pfunc.removeNameTag(p);
-	    		GV.removeNoChoose(p);
+	    		Global.removeNoChoose(p);
 	    	}
 	    	
 	    	//先讓名條被刪除再傳送
@@ -502,13 +495,13 @@ public class PlayerListener implements Listener{
 	    		int nowat = Integer.parseInt(s);
 	    		
 	    		if (nowat - 1 > 0){
-	    			GV.addTurnPage(p);
+	    			Global.addTurnPage(p);
 	    			list.List(p, nowat - 1);
 	    		}
 	    			
 	    	}catch(NumberFormatException ex){
 	    		ex.printStackTrace();
-	    		warn.Warn("在獲取目前所在頁數時出了問題");
+	    		WarningGen.Warn("在獲取目前所在頁數時出了問題");
 	    	}
 	    }
 	    	
@@ -526,13 +519,13 @@ public class PlayerListener implements Listener{
 	    		int total = Integer.parseInt(totalstr);
 	    			
 	    		if(nowat + 1 <= total){
-	    			GV.addTurnPage(p);
+	    			Global.addTurnPage(p);
 	    			list.List(p, nowat + 1);
 	    		}
 	    			
 	    	}catch(NumberFormatException ex){
 	    		ex.printStackTrace();
-	    		warn.Warn("在獲取目前所在頁數或總頁數時出了問題");
+	    		WarningGen.Warn("在獲取目前所在頁數或總頁數時出了問題");
 	    	}
 	    }
 	    	
@@ -541,7 +534,7 @@ public class PlayerListener implements Listener{
 	    	//重設復活點
 	    	if(click.equals(ClickType.SHIFT_RIGHT)){
 	    	    
-	    		GV.setSame(name);
+	    		Global.setTempName(name);
 	    		p.performCommand("dw set " + name.replace("&", "/&"));
 	    		p.playSound(p.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
 	    	}
@@ -565,9 +558,9 @@ public class PlayerListener implements Listener{
 	    			list.List(p, nowat);
 	    		}catch(NumberFormatException ex){
 	    			ex.printStackTrace();
-	    			warn.Warn("在獲取目前所在頁數時出了問題");
+	    			WarningGen.Warn("在獲取目前所在頁數時出了問題");
 	    		}
-	    		p.sendMessage(Header + ChatColor.DARK_RED + "已將復活點 §f§l[§r" + name + "§f§l] " + ChatColor.RESET + ChatColor.DARK_RED + "移除!");
+	    		p.sendMessage(Global.Header + ChatColor.DARK_RED + "已將復活點 §f§l[§r" + name + "§f§l] " + ChatColor.RESET + ChatColor.DARK_RED + "移除!");
 	    	}
 	    		
 	    	//更改圖示
@@ -598,7 +591,7 @@ public class PlayerListener implements Listener{
 	    		e.setCurrentItem(icon);
 
 	    		p.playSound(p.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
-	    		p.sendMessage(Header + ChatColor.GREEN + "已更新復活點圖示");
+	    		p.sendMessage(Global.Header + ChatColor.GREEN + "已更新復活點圖示");
 	    		
 	    		return;
 	    		
@@ -625,9 +618,9 @@ public class PlayerListener implements Listener{
 	    //傳送至復活點
 	    if((click.equals(ClickType.LEFT)) && (slot <= 26)){
 	    	
-	    	if(GV.didNotChoose(p)){
+	    	if(Global.didNotChoose(p)){
 	    		pfunc.removeNameTag(p);
-	    		GV.removeNoChoose(p);
+	    		Global.removeNoChoose(p);
 	    	}
 	    	
 	    	String id = lore.get(0).toString().replace("§bID:", "");
@@ -640,7 +633,7 @@ public class PlayerListener implements Listener{
 	    		public void run(){
 	    	    	p.teleport(loc);
 	    	    	
-	    	    	if(GV.isGhost(p)){
+	    	    	if(Global.isGhost(p)){
 	    	    		pfunc.TurnBack(p);
 	    	    	}
 	    	    	
@@ -674,7 +667,7 @@ public class PlayerListener implements Listener{
 	    
 	    if(item.getItemMeta().getLore().get(0).toString().equals(ChatColor.GOLD + "更新前名稱:")){
 	    	inv.setItem(0, null);
-	    	p.sendMessage(Header + ChatColor.RED + "已取消重新命名復活點");
+	    	p.sendMessage(Global.Header + ChatColor.RED + "已取消重新命名復活點");
 	    	p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_AMBIENT, 1, 1);
 	    }
 	    
@@ -718,7 +711,7 @@ public class PlayerListener implements Listener{
 	        
 	    	}else if(rawSlot == 1){
 	    	  
-	    		p.sendMessage(Header + ChatColor.RED + "已取消重新命名復活點");
+	    		p.sendMessage(Global.Header + ChatColor.RED + "已取消重新命名復活點");
 	    		p.getOpenInventory().setItem(0, null);
 	    		p.closeInventory();
 	    		p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_AMBIENT, 1, 1);
@@ -745,7 +738,7 @@ public class PlayerListener implements Listener{
 	    		if(name.endsWith(" ")){
 	    			p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
 	          
-	    			p.sendMessage(Header + ChatColor.DARK_RED + "結尾不能有空格!");
+	    			p.sendMessage(Global.Header + ChatColor.DARK_RED + "結尾不能有空格!");
 	    			return;
 	    		}
 	    		
@@ -770,7 +763,7 @@ public class PlayerListener implements Listener{
 	    		for(String id : spawns.getConfig().getConfigurationSection("spawns").getKeys(false)){
 	          
 	    			if(spawns.getConfig().getString("spawns." + id + ".name").equals(name)){
-	    				p.sendMessage(Header + ChatColor.DARK_RED + "這個名字已經用過了!");
+	    				p.sendMessage(Global.Header + ChatColor.DARK_RED + "這個名字已經用過了!");
 	    				p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
 	    				return;
 	    			}
@@ -778,12 +771,12 @@ public class PlayerListener implements Listener{
 	        
 	    		if(ChatColor.stripColor(name).equals("")){
 	    			p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
-	    			p.sendMessage(this.Header + ChatColor.DARK_RED + "你似乎沒有輸入文字或只輸入格式碼!");
+	    			p.sendMessage(Global.Header + ChatColor.DARK_RED + "你似乎沒有輸入文字或只輸入格式碼!");
 	    			return;
 	    		}
 	    		if(ChatColor.stripColor(name).contains("§")){
 	    			p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
-	    			p.sendMessage(this.Header + ChatColor.DARK_RED + "名稱中不可以含有不具意義格式碼!");
+	    			p.sendMessage(Global.Header + ChatColor.DARK_RED + "名稱中不可以含有不具意義格式碼!");
 	    			return;
 	    		}
 	    		
@@ -799,7 +792,7 @@ public class PlayerListener implements Listener{
 	    		
 	    		spawns.set("spawns." + rightid + ".name", name);
 
-	    		p.sendMessage(this.Header + ChatColor.GREEN + "已將復活點名稱改為 " + ChatColor.WHITE + ChatColor.BOLD + "[" + ChatColor.RESET + name + ChatColor.WHITE + ChatColor.BOLD + "]");
+	    		p.sendMessage(Global.Header + ChatColor.GREEN + "已將復活點名稱改為 " + ChatColor.WHITE + ChatColor.BOLD + "[" + ChatColor.RESET + name + ChatColor.WHITE + ChatColor.BOLD + "]");
 	    		p.getOpenInventory().setItem(0, null);
 	    		p.closeInventory();
 	    		p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_USE, 1, 1);
@@ -830,14 +823,14 @@ public class PlayerListener implements Listener{
 		
 	    ItemMeta meta = item.getItemMeta();
 	    
-	    ItemStack Respawn = im.createItem(Material.getMaterial(config.getConfig().getString("config.respawn item.type")),
-				config.getConfig().getInt("config.respawn item.damage"),
-				config.getConfig().getString("config.respawn item.name"),
-				config.getConfig().getStringList("config.respawn item.lore"), true);
-		ItemStack Here = im.createItem(Material.getMaterial(config.getConfig().getString("config.respawn right here item.type")),
-				config.getConfig().getInt("config.respawn right here item.damage"),
-				config.getConfig().getString("config.respawn right here item.name"),
-				config.getConfig().getStringList("config.respawn right here item.lore"), true);
+	    ItemStack instant_respawn_item = im.createItem(Material.getMaterial(config.getConfig().getString("config.instant respawn item.type")),
+				config.getConfig().getInt("config.instant respawn item.damage"),
+				config.getConfig().getString("config.instant respawn item.name"),
+				config.getConfig().getStringList("config.instant respawn item.lore"), true);
+		ItemStack assistant_respawn_item = im.createItem(Material.getMaterial(config.getConfig().getString("config.assistant respawn item.type")),
+				config.getConfig().getInt("config.assistant respawn item.damage"),
+				config.getConfig().getString("config.assistant respawn item.name"),
+				config.getConfig().getStringList("config.assistant respawn item.lore"), true);
 	    
 	    if(!meta.hasLore()){
 	    	return;
@@ -849,7 +842,7 @@ public class PlayerListener implements Listener{
 	    if((action.equals(Action.RIGHT_CLICK_AIR)) || (action.equals(Action.RIGHT_CLICK_BLOCK))){
 	    	
 	    	//直接復活道具
-	    	if((meta.getDisplayName().equals(Respawn.getItemMeta().getDisplayName())) && (meta.getLore().equals(Respawn.getItemMeta().getLore()))){
+	    	if((meta.getDisplayName().equals(instant_respawn_item.getItemMeta().getDisplayName())) && (meta.getLore().equals(instant_respawn_item.getItemMeta().getLore()))){
 	    		e.setCancelled(true);
 	        
 	    		int amount = 0;
@@ -872,36 +865,38 @@ public class PlayerListener implements Listener{
 	    		
 	    		int quota = data.getConfig().getInt("players." + p.getUniqueId() + ".quota");
 	    		
-	    		p.sendMessage(Header + ChatColor.GREEN + "已增加一次免等額度");
-	    		p.sendMessage(Header + ChatColor.GREEN + "剩餘" + quota + "次免等額度");
+	    		p.sendMessage(Global.Header + ChatColor.GREEN + "已增加一次免等額度");
+	    		p.sendMessage(Global.Header + ChatColor.GREEN + "剩餘" + quota + "次免等額度");
 	    	}
 	    	
 	    	//原地復活道具
-	    	if((meta.getDisplayName().equals(Here.getItemMeta().getDisplayName())) && (meta.getLore().equals(Here.getItemMeta().getLore()))){
+	    	if((meta.getDisplayName().equals(assistant_respawn_item.getItemMeta().getDisplayName())) && (meta.getLore().equals(assistant_respawn_item.getItemMeta().getLore()))){
 	    		e.setCancelled(true);
 	    		
-	    		for(Entity ent : p.getNearbyEntities(1.0D, 0.0D, 1.0D)){
+	    		for(Entity ent : p.getNearbyEntities(1.0, 0.0, 1.0)){
 	    			if((ent instanceof Player)){
 
     					Player entp = (Player) ent;
     					
-	    				if(GV.isGhost(entp) && (!GV.isInTargetEntity(entp))){
+	    				if(Global.isGhost(entp) && (!Global.isInTargetEntity(entp))){
 	    					
-	    					if(GV.didNotChoose(entp)){
-	    						GV.removeNoChoose(entp);
+	    					if(Global.didNotChoose(entp)){
+	    						Global.removeNoChoose(entp);
 	    						entp.closeInventory();
 	    					}
-	    					if(GV.hasIds(entp)){
-	    						core.getServer().getScheduler().cancelTask(((Integer) GV.getIds(entp)).intValue());
-	    						GV.removeIds(entp);
+	    					if(Global.hasIds(entp)){
+	    						core.getServer().getScheduler().cancelTask(((Integer) Global.getIds(entp)).intValue());
+	    						Global.removeIds(entp);
 	    					}
 	    					
 	    					pfunc.removeNameTag(entp);
-	    					entp.teleport(entp.getLocation().add(0.0D, 0.2D, 0.0D));
+	    					entp.teleport(entp.getLocation().add(0.0, 0.2, 0.0));
 	    					pfunc.TurnBack(entp);
 	              
 	    					nms.sendTitle(entp, "");
-	    					nms.sendSubTitle(entp, ChatColor.DARK_GREEN + p.getName() + "用" + ChatColor.RESET + config.getConfig().getString("config.respawn right here item.name").replace('&', '§').replace("/§", "&") + ChatColor.DARK_GREEN + "讓你在這裡復活");
+	    					nms.sendSubTitle(entp, 
+	    							ChatColor.DARK_GREEN + p.getName() + "用" + ChatColor.RESET + assistant_respawn_item.getItemMeta().getDisplayName() + ChatColor.DARK_GREEN + "讓你在這裡復活",
+	    							0, 40, 10);
 	    					entp.getWorld().spawnEntity(entp.getLocation(), EntityType.FIREWORK);
 	    					if(item.getAmount() > 1){
 	    						item.setAmount(item.getAmount() - 1);
@@ -921,11 +916,11 @@ public class PlayerListener implements Listener{
 	    	}
 	    }
 	    if((action.equals(Action.LEFT_CLICK_AIR)) || (action.equals(Action.LEFT_CLICK_BLOCK))){
-	    	if((meta.getDisplayName().equals(Respawn.getItemMeta().getDisplayName())) && (meta.getLore().equals(Respawn.getItemMeta().getLore()))){
+	    	if((meta.getDisplayName().equals(instant_respawn_item.getItemMeta().getDisplayName())) && (meta.getLore().equals(instant_respawn_item.getItemMeta().getLore()))){
 	    		e.setCancelled(true);
 	    		
 	    		int quota = data.getConfig().getInt("players." + p.getUniqueId() + ".quota");
-	    		p.sendMessage(Header + ChatColor.GREEN + "剩餘" + quota + "次免等額度");
+	    		p.sendMessage(Global.Header + ChatColor.GREEN + "剩餘" + quota + "次免等額度");
 	    	}
 	    }
 	}

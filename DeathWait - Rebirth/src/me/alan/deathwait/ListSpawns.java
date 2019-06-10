@@ -26,7 +26,6 @@ public class ListSpawns {
 	private Spawns spawns;
 	private PlayerFunctions pfunc;
 	private ItemMaker im;
-	private Globalvar GV;
 	
 	public ListSpawns(Core core, PlayerFunctions pfunc){
 		
@@ -36,14 +35,13 @@ public class ListSpawns {
 		spawns = core.getSpawnsClass();
 		this.pfunc = pfunc;
 		im = new ItemMaker();
-		GV = core.getGlobalvarClass();
 		
 	}
 	
 	public void List(final Player p, int nowat){
 		
 	    Inventory gui = Bukkit.createInventory(null, 36, ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "所有復活點");
-	    boolean button = config.getConfig().getBoolean("config.default respawn button");
+	    boolean button = config.getConfig().getBoolean("config.display button of default respawn point");
 	    
 	    //計算頁數
 	    int pages;
@@ -53,7 +51,7 @@ public class ListSpawns {
 	    	for(String id : spawns.getConfig().getConfigurationSection("spawns").getKeys(false)){
 
 	    		//如果玩家有dw.gui.own必須只算有權限的復活點數量
-	    		if(GV.isGhost(p) && p.hasPermission("dw.gui.own")){
+	    		if(Global.isGhost(p) && p.hasPermission("dw.gui.own")){
 	    			
 	    			if(p.hasPermission("dw.respawn." + id)){
 	    				spawnpoints++;
@@ -112,7 +110,7 @@ public class ListSpawns {
 	    	List<String> lore = new ArrayList<String>();
 	    	lore.add("&b優先順序:");
 	    	
-	    	if(GV.hasEssentials){
+	    	if(Global.hasEssentials){
 		    	lore.add("&bEssentials的家(最早設定的) →");
 	    	}
 	    	
@@ -132,7 +130,7 @@ public class ListSpawns {
 	    		}
 	    		
 	    		//如果玩家有dw.gui.own必須跳過顯示沒有權限的復活點
-	    		if(GV.isGhost(p) && p.hasPermission("dw.gui.own")){
+	    		if(Global.isGhost(p) && p.hasPermission("dw.gui.own")){
 	    			if(!p.hasPermission("dw.respawn." + id)){
 	    				continue;
 	    			}
@@ -147,7 +145,7 @@ public class ListSpawns {
 	    		lore.add(ChatColor.BLUE + "X座標:" + loc.getX());
 	    		lore.add(ChatColor.BLUE + "Y座標:" + loc.getY());
 	    		lore.add(ChatColor.BLUE + "Z座標:" + loc.getZ());
-	    		if(!GV.isGhost(p)){
+	    		if(!Global.isGhost(p)){
 	    			lore.add(ChatColor.GREEN + "《左鍵》傳送至復活點");
 	    			lore.add(ChatColor.GREEN + "《右鍵》重新命名復活點");
 	    			lore.add(ChatColor.GREEN + "《換掉此格道具》將此復活點的圖示改成你放的道具");
@@ -183,9 +181,9 @@ public class ListSpawns {
 	    
 	    p.openInventory(gui);
 	    	    
-	    int timelimit = config.getConfig().getInt("config.choosing time limit");
+	    int timelimit = config.getConfig().getInt("config.time limit of browsing the list");
 	    
-	    if((timelimit > 0) && !GV.haveChoosingCountingDownId(p) && GV.isGhost(p)){
+	    if((timelimit > 0) && !Global.haveChoosingCountingDownId(p) && Global.isGhost(p)){
 	    		    	
 	    	final List<String> lore = new ArrayList<String>();
 	    	lore.add(ChatColor.RED + "若不做選擇會傳到自然重生點");
@@ -200,7 +198,7 @@ public class ListSpawns {
 	    			Location loc = p.getLocation();
 	    			
 	    			//如果還沒選復活點，顯示倒數
-	    			if(GV.didNotChoose(p)){
+	    			if(Global.didNotChoose(p)){
 	    				
 	    				ItemStack watch = im.createItem(Material.WATCH, 0, ChatColor.DARK_RED + "你還剩" + wait + "秒做選擇", lore, false);
 						
@@ -235,9 +233,9 @@ public class ListSpawns {
     						p.playSound(loc, Sound.BLOCK_NOTE_HARP, 1, 1);
     						
     					}else if(wait == 0){
-    						Bukkit.getScheduler().cancelTask(GV.getChoosingCountingDownId(p));
-	    					GV.removeChoosingCountingDownId(p);
-	    					GV.removeNoChoose(p);
+    						Bukkit.getScheduler().cancelTask(Global.getChoosingCountingDownId(p));
+	    					Global.removeChoosingCountingDownId(p);
+	    					Global.removeNoChoose(p);
 	    					pfunc.tpNormalSpawnPoint(p);
 	    					pfunc.TurnBack(p);
     					}
@@ -246,14 +244,14 @@ public class ListSpawns {
 	    				
 	    			}else{
 	    			//如果選了復活點，終止倒數
-	    				Bukkit.getScheduler().cancelTask(GV.getChoosingCountingDownId(p));
-	    				GV.removeChoosingCountingDownId(p);
+	    				Bukkit.getScheduler().cancelTask(Global.getChoosingCountingDownId(p));
+	    				Global.removeChoosingCountingDownId(p);
 	    			}
 	    			
 	    		}
 	    		
 	    	}, 0L, 20L);
-	    	GV.giveChoosingCountingDownId(p, time);
+	    	Global.giveChoosingCountingDownId(p, time);
 	    }
 	}
 }

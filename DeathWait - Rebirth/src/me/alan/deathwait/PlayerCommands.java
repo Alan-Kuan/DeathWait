@@ -18,15 +18,12 @@ import me.alan.deathwait.nms.NMS;
 
 public class PlayerCommands implements CommandExecutor{
 	
-	String Header = ChatColor.GOLD + "[DeathWait]";
-	
 	private Config config;
 	private Data data;
 	private Spawns spawns;
 	private NMS nms;
 	private ListSpawns list;
 	private ItemMaker im;
-	private Globalvar GV;
 	
 	private Core core;
 	
@@ -40,7 +37,6 @@ public class PlayerCommands implements CommandExecutor{
 		nms = core.getNMSClass();
 		list = new ListSpawns(core, core.getPlayerFunctionsClass());
 		im = new ItemMaker();
-		GV = core.getGlobalvarClass();
 		
 	}
 		
@@ -57,25 +53,28 @@ public class PlayerCommands implements CommandExecutor{
 		
 		final Player p = (Player) sender;
 		
-		//  /dw check 不需要權限
+		
 		if(!p.hasPermission("dw.command")){
 			
+			//  /dw check 不需要權限
 			if(args.length == 0 || !args[0].equals("check")){
-				p.sendMessage(Header + ChatColor.DARK_RED + "你沒有權限!");
+				p.sendMessage(Global.Header + ChatColor.DARK_RED + "你沒有權限!");
 				return false;
 			}
 			
 		}
 		
-		Boolean CL = config.getConfig().getBoolean("config.custom location");
-		ItemStack Respawn = im.createItem(Material.getMaterial(config.getConfig().getString("config.respawn item.type")),
-				config.getConfig().getInt("config.respawn item.damage"),
-				config.getConfig().getString("config.respawn item.name"),
-				config.getConfig().getStringList("config.respawn item.lore"), true);
-		ItemStack Here = im.createItem(Material.getMaterial(config.getConfig().getString("config.respawn right here item.type")),
-				config.getConfig().getInt("config.respawn right here item.damage"),
-				config.getConfig().getString("config.respawn right here item.name"),
-				config.getConfig().getStringList("config.respawn right here item.lore"), true);
+		boolean enable_custom_location = config.getConfig().getBoolean("config.enable custom location");
+		
+		ItemStack instant_respawn_item = im.createItem(Material.getMaterial(config.getConfig().getString("config.instant respawn item.type")),
+				config.getConfig().getInt("config.instant respawn item.damage"),
+				config.getConfig().getString("config.instant respawn item.name"),
+				config.getConfig().getStringList("config.instant respawn item.lore"), true);
+		
+		ItemStack assistant_respawn_item = im.createItem(Material.getMaterial(config.getConfig().getString("config.assistant respawn item.type")),
+				config.getConfig().getInt("config.assistant respawn item.damage"),
+				config.getConfig().getString("config.assistant respawn item.name"),
+				config.getConfig().getStringList("config.assistant respawn item.lore"), true);
 				
 		if(args.length == 0){
 	        	
@@ -85,26 +84,26 @@ public class PlayerCommands implements CommandExecutor{
 			nms.sendCommand(p, "§b/dw reload - 重讀本插件 ", "/dw reload");
 			nms.sendCommand(p, "§b/dw list - 查看所有復活點 ", "/dw list");
 			nms.sendExample(p);
-			nms.sendCommand(p, "§b/dw respawnitem [<數量>] - 獲得免等道具 ", "/dw respawnitem");
-			nms.sendCommand(p, "§b/dw hereitem [<數量>] - 獲得原地復活道具 ", "/dw hereitem");
+			nms.sendCommand(p, "§b/dw instant [<數量>] - 獲得免等道具 ", "/dw instant");
+			nms.sendCommand(p, "§b/dw assistant [<數量>] - 獲得原地復活道具 ", "/dw assistant");
 			nms.sendCommand(p, "§b/dw check - 查詢剩餘幾次免等額度 ", "/dw check");
 			p.sendMessage(ChatColor.AQUA + "" + ChatColor.STRIKETHROUGH + "                                                ");
 			
 		}else if(args[0].equals("reload")){
 	        	
 			if(args.length > 1){
-				p.sendMessage(Header + ChatColor.RED + "用法: /dw reload");
+				p.sendMessage(Global.Header + ChatColor.RED + "用法: /dw reload");
 			}else{
 				config.load();
 				data.load();
 				spawns.load();
 				
-				p.sendMessage(Header + ChatColor.GREEN + "已重讀完畢!");
+				p.sendMessage(Global.Header + ChatColor.GREEN + "已重讀完畢!");
 			}
 	        
 		}else if(args[0].equals("set")){
 	        
-			if(CL.booleanValue()){
+			if(enable_custom_location){
 	        	  
 				if(args.length > 1){
 	        		
@@ -126,17 +125,17 @@ public class PlayerCommands implements CommandExecutor{
 	        				  
 							if(spawns.getConfig().getString("spawns." + id + ".name").equals(name)){
 	        					  
-								if(!GV.isSame(name)){
-	        						  
-									GV.setSame(name);
-									p.sendMessage(Header + ChatColor.DARK_RED + "這個名字的復活點已經有囉! 再次輸入會覆蓋原座標");
+								if(!Global.getTempName().equals(name)){
+	        						
+									Global.setTempName(name);
+									p.sendMessage(Global.Header + ChatColor.DARK_RED + "這個名字的復活點已經有囉! 再次輸入會覆蓋原座標");
 									return false;
 	        						  
 								}
 	        					  
 								spawns.set("spawns." + id + ".location", loc);
 	        						        					
-								GV.removeSame();
+								Global.setTempName("");
 								nms.sendLocation(p, name, loc);
 								return false;
 							}
@@ -155,22 +154,22 @@ public class PlayerCommands implements CommandExecutor{
 	        		  	spawns.set("spawns." + id + ".icon.glowing", false);
 	        		  	spawns.set("last ID", Integer.valueOf(id));
 	        		  	
-	        		  	GV.removeSame();
+	        		  	Global.setTempName("");
 	        		  	nms.sendLocation(p, name, loc);
 				}else{
-					p.sendMessage(Header + ChatColor.RED + "用法: /dw set <復活點名稱>");
+					p.sendMessage(Global.Header + ChatColor.RED + "用法: /dw set <復活點名稱>");
 				}
 	        	  
 			}else{
-				p.sendMessage(Header + ChatColor.RED + "你沒有開啟自訂重生點功能");
+				p.sendMessage(Global.Header + ChatColor.RED + "你沒有開啟自訂重生點功能");
 			}
 
 		}else if(args[0].equals("list")){
 	        	
-			if(CL.booleanValue()){
+			if(enable_custom_location){
 				
 				if(args.length > 1){
-					p.sendMessage(Header + ChatColor.RED + "用法: /dw list");
+					p.sendMessage(Global.Header + ChatColor.RED + "用法: /dw list");
 				}else{
 					
 					list.List(p, 1);
@@ -178,16 +177,16 @@ public class PlayerCommands implements CommandExecutor{
 				}
 				
 			}else{
-				p.sendMessage(Header + ChatColor.RED + "你沒有開啟自訂重生點功能");
+				p.sendMessage(Global.Header + ChatColor.RED + "你沒有開啟自訂重生點功能");
 			}
 	            
-		}else if(args[0].equals("respawnitem")){
+		}else if(args[0].equals("instant")){
 	        	
 			if(args.length == 1){
 	        		
-				p.getInventory().addItem(Respawn);
-				p.sendMessage(this.Header + ChatColor.GREEN + "已給1個免等復活道具");
-	        		
+				p.getInventory().addItem(instant_respawn_item);
+				p.sendMessage(Global.Header + ChatColor.GREEN + "已給1個免等復活道具");
+	        	
 			}else if(args.length == 2){
 	        		
 				try{
@@ -195,57 +194,57 @@ public class PlayerCommands implements CommandExecutor{
 					int i = Integer.parseInt(args[1]);
 	        			
 					if(i <= 0){
-						p.sendMessage(this.Header + ChatColor.RED + "為何你要輸入無法提供的數量!");
+						p.sendMessage(Global.Header + ChatColor.RED + "為何你要輸入無法提供的數量!");
 						return false;
 					}
 					
 					while(i > 0){
-						p.getInventory().addItem(Respawn);
+						p.getInventory().addItem(instant_respawn_item);
 						i--;
 					}
 					
 				}catch (NumberFormatException e){
-					p.sendMessage(this.Header + ChatColor.RED + "你確定你輸入的是數字嗎?");
+					p.sendMessage(Global.Header + ChatColor.RED + "你確定你輸入的是數字嗎?");
 					return false;
 				}
 				
-				p.sendMessage(this.Header + ChatColor.GREEN + "已給" + args[1] + "個免等復活道具");
+				p.sendMessage(Global.Header + ChatColor.GREEN + "已給" + args[1] + "個免等復活道具");
 			}else{
-				p.sendMessage(Header + ChatColor.RED + "用法: /dw respawnitem [<數量>]");
+				p.sendMessage(Global.Header + ChatColor.RED + "用法: /dw instant [<數量>]");
 			}
 	        
 			p.playSound(p.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1, 1);
 	        
-		}else if(args[0].equals("hereitem")){
+		}else if(args[0].equals("assistant")){
 	        	
 			if(args.length == 1){
-				p.getInventory().addItem(Here);
-				p.sendMessage(Header + ChatColor.GREEN + "已給1個原地復活道具");
+				p.getInventory().addItem(assistant_respawn_item);
+				p.sendMessage(Global.Header + ChatColor.GREEN + "已給1個原地復活道具");
 			}else if(args.length == 2){
-	        		
+	        	
 				try{
 					
 					int i = Integer.parseInt(args[1]);
 					
 					if(i <= 0){
-						p.sendMessage(Header + ChatColor.RED + "為何你要輸入無法提供的數量!");
+						p.sendMessage(Global.Header + ChatColor.RED + "為何你要輸入無法提供的數量!");
 						return false;
 					}
 	        			
 					while(i > 0){
-						p.getInventory().addItem(Here);
+						p.getInventory().addItem(assistant_respawn_item);
 						i--;
 					}
 					
 				}catch (NumberFormatException e){
-					p.sendMessage(Header + ChatColor.RED + "你確定你輸入的是數字嗎?");
+					p.sendMessage(Global.Header + ChatColor.RED + "你確定你輸入的是數字嗎?");
 					return false;
 				}
 				
-				p.sendMessage(Header + ChatColor.GREEN + "已給" + args[1] + "個原地復活道具");
+				p.sendMessage(Global.Header + ChatColor.GREEN + "已給" + args[1] + "個原地復活道具");
 				
 			}else{
-				p.sendMessage(Header + ChatColor.RED + "用法: /dw hereitem [<數量>]");
+				p.sendMessage(Global.Header + ChatColor.RED + "用法: /dw assistant [<數量>]");
 			}
 			
 			p.playSound(p.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1, 1);
@@ -253,14 +252,14 @@ public class PlayerCommands implements CommandExecutor{
 		}else if(args[0].equals("check")){
 			
 			if(args.length > 1){
-				p.sendMessage(Header + ChatColor.RED + "用法: /dw check");
+				p.sendMessage(Global.Header + ChatColor.RED + "用法: /dw check");
 			}else{
-				p.sendMessage(Header + ChatColor.GREEN + "剩餘" + data.getConfig().getInt("players." + p.getUniqueId() + ".quota") + "次免等額度");
+				p.sendMessage(Global.Header + ChatColor.GREEN + "剩餘" + data.getConfig().getInt("players." + p.getUniqueId() + ".quota") + "次免等額度");
 			}
 			
 		}else{
 			
-			p.sendMessage(Header + ChatColor.RED + "指令錯誤!輸入/dw 獲取幫助");
+			p.sendMessage(Global.Header + ChatColor.RED + "指令錯誤!輸入/dw 獲取幫助");
 			
 		}
 		

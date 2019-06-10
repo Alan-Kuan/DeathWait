@@ -5,42 +5,42 @@
 #  dw.respawn.<復活點ID> - 決定玩家能重生到的復活點                #
 #  dw.gui - 允許玩家透過目錄選擇復活點                             #
 #  dw.gui.own - 使玩家透過目錄選擇復活點時，只顯示擁有權限的復活點 #
-#  dw.rescue - 允許玩家在進行死亡等待時可向周遭玩家求教            #
+#  dw.yell - 允許玩家在進行死亡等待時可向周遭玩家求教              #
 #==================================================================#
 config:
 
   #死亡等待秒數
-  wait seconds: 5
+  waiting seconds: 5
 
   #是否開啟自訂重生點功能
-  custom location: false
+  enable custom location: false
   
   #是否在死亡後重置飽食度
-  reset food level: true
+  reset food level after death: true
 
   #是否在死亡後移除藥水效果
-  remove effects: true
+  remove effects after death: true
 
   #是否在死亡時噴經驗
-  lose XP: true
+  lose XP after death: true
 
   #在幽靈狀態時是否能移動
-  can move: false
+  allow moving in ghost mode: false
 
   #是否要顯示靈魂(粒子效果)
-  show spirit: true
+  display soul of players: true
   
-  #是否在復活點目錄中顯示自然復活方式的按鈕
-  default respawn button: true
+  #是否在復活點目錄中顯示預設復活點的按鈕
+  display button of default respawn point: true
 
   #是否在死亡時進入殺手視角
-  killer view: false
+  enable killer view: false
 
-  #玩家在選擇復活點時可用的時間秒數(-1表示無限制)
-  choosing time limit: -1
+  #玩家在目錄選擇復活點時可用的時間秒數(-1表示無限制)
+  time limit of browsing the list: -1
   
   #直接復活道具
-  respawn item:
+  instant respawn item:
     name: '&b&l直接復活'
     type: NETHER_STAR
     damage: 0
@@ -50,7 +50,7 @@ config:
     - '&b手持左鍵能查詢剩餘額度'
 
   #原地復活道具
-  respawn right here item:
+  assistant respawn item:
     name: '&b&l魔晶石'
     type: PRISMARINE_SHARD
     damage: 0

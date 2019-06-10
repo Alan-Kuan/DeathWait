@@ -34,8 +34,6 @@ import me.alan.deathwait.nms.v1_12_R1;
 
 public class Core extends JavaPlugin {
 
-	private WarningGen warn;
-	private Globalvar GV;
 	private Config config;
 	private Data data;
 	private Spawns spawns;
@@ -60,7 +58,7 @@ public class Core extends JavaPlugin {
 			}
 		}catch (SecurityException e){
 			e.printStackTrace();
-	        warn.Warn("在啟動插件時為了產生DeathWait資料夾而出了問題");
+	        WarningGen.Warn("在啟動插件時為了產生DeathWait資料夾而出了問題");
 		}
 		
 		if(version.equals("v1_10_R1")){
@@ -74,8 +72,6 @@ public class Core extends JavaPlugin {
 			nms = new v1_12_R1();
 		}
 		
-		warn = new WarningGen(this);
-		GV = new Globalvar();
 		config = new Config(this);
 		data = new Data(this);
 		spawns = new Spawns(this);
@@ -87,25 +83,23 @@ public class Core extends JavaPlugin {
 
 		//確認是否有裝Essentials
 		if(Bukkit.getPluginManager().isPluginEnabled("Essentials")){
-			GV.setEssentials(true);
+			Global.hasEssentials = true;
 			Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + "[DeathWait] 偵測到此伺服安裝Essentials! 已啟動額外功能!");
 		}
 		
 		Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[DeathWait] V" + getDescription().getVersion() + "已啟動! " + ChatColor.DARK_AQUA + "by小恩AlanKuan");
 	    
-		warn.Warn("Just for testing");
-		
 		//顯示靈魂
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable(){
 			
 			@Override
 			public void run(){
 
-				boolean show = config.getConfig().getBoolean("config.show spirit");
+				boolean show = config.getConfig().getBoolean("config.display soul of players");
 								
 				for(Player p : getServer().getOnlinePlayers()){
-					if(show && GV.isGhost(p) && !GV.isInTargetEntity(p)){
-						p.getWorld().spawnParticle(Particle.FLAME, p.getLocation().add(0.0D, 1.0D, 0.0D), 50, 0.1, 0.1, 0.1, 0.01);
+					if(show && Global.isGhost(p) && !Global.isInTargetEntity(p)){
+						p.getWorld().spawnParticle(Particle.FLAME, p.getLocation().add(0.0, 1.0, 0.0), 50, 0.1, 0.1, 0.1, 0.01);
 					}
 				}
 			}
@@ -124,7 +118,7 @@ public class Core extends JavaPlugin {
 	    try{
 	    	version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 	    }catch (ArrayIndexOutOfBoundsException e){
-	    	warn.Warn("在取得伺服器版本時出了問題");
+	    	WarningGen.Warn("在取得伺服器版本時出了問題");
 	    	return false;
 	    }
 	    
@@ -137,10 +131,6 @@ public class Core extends JavaPlugin {
 		
 	public void onDisable(){
 		Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "[DeathWait] V" + getDescription().getVersion() + "已關閉");
-	}
-	
-	public Globalvar getGlobalvarClass(){
-		return GV;
 	}
 	
 	public PlayerFunctions getPlayerFunctionsClass(){

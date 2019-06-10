@@ -8,7 +8,7 @@ public abstract interface NMS{
 	
 	public abstract void sendTitle(Player paramPlayer, String paramString);
   
-	public abstract void sendSubTitle(Player paramPlayer, String paramString);
+	public abstract void sendSubTitle(Player paramPlayer, String paramString, int fade_in, int duration, int fade_out);
   
 	public abstract void sendCommand(Player paramPlayer, String paramString1, String paramString2);
   

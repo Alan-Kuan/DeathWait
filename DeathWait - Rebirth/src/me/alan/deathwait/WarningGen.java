@@ -13,20 +13,12 @@ import org.bukkit.ChatColor;
 //²£¥Íerror.txt
 public class WarningGen {
 
-	private Core core;
-	
-	public WarningGen(Core core){
-		
-		this.core = core;
-				
-	}
-	
-	public void Warn(String warning){
+	public static void Warn(String warning){
 
 		Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "[DeathWait] " + warning);
 		
 		
-		String file_path = core.getDataFolder() + "/error.txt";
+		String file_path = Bukkit.getServer().getPluginManager().getPlugin("DeathWait").getDataFolder() + "/error.txt";
 		
 		Date now = new Date();
 		

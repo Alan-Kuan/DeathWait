@@ -34,8 +34,6 @@ public class PlayerFunctions {
 	private Spawns spawns;
 	private NMS nms;
 	private ListSpawns list;
-	private WarningGen warn;
-	private Globalvar GV;
 	
 	public PlayerFunctions(Core core){
 		
@@ -45,23 +43,21 @@ public class PlayerFunctions {
 		spawns = core.getSpawnsClass();
 		nms = core.getNMSClass();
 		list = new ListSpawns(core, this);
-		warn = new WarningGen(core);
-		GV = core.getGlobalvarClass();
 		
 	}
 		
 	//讓玩家復活
 	public void Respawn(final Player p){
 				
-		boolean CL = config.getConfig().getBoolean("config.custom location");
-		boolean button = config.getConfig().getBoolean("config.default respawn button");
+		boolean enable_custom_location = config.getConfig().getBoolean("config.enable custom location");
+		boolean enable_default_respawn_button = config.getConfig().getBoolean("config.display button of default respawn point");
 				
-	    if(CL){
+	    if(enable_custom_location){
 
     		//如果 有權限 且 有復活點可挑
-	    	if(p.hasPermission("dw.gui") && (button || (!spawns.getConfig().getConfigurationSection("spawns").getKeys(true).isEmpty()))){
+	    	if(p.hasPermission("dw.gui") && (enable_default_respawn_button || (!spawns.getConfig().getConfigurationSection("spawns").getKeys(true).isEmpty()))){
 	    	  
-	    		GV.addNoChoose(p);
+	    		Global.addNoChoose(p);
 	          
 	    		Bukkit.getScheduler().scheduleSyncDelayedTask(core, new Runnable(){
 	           
@@ -88,7 +84,7 @@ public class PlayerFunctions {
 	    	    			id = Integer.parseInt(idstr);
 	    	    		}catch(NumberFormatException ex){
 	    	    			ex.printStackTrace();
-	    	    			warn.Warn("你在" + p.getName() + "的權限設定上出現dw.respawn." + idstr + "的情形");
+	    	    			WarningGen.Warn("你在" + p.getName() + "的權限設定上出現dw.respawn." + idstr + "的情形");
 	    	    			continue;
 	    	    		}
 	    				
@@ -104,13 +100,13 @@ public class PlayerFunctions {
 	    			
 	    			if(spawns.getConfig().getInt("last ID") < id){
 		    			tpNormalSpawnPoint(p);
-		    			warn.Warn(p.getName() + "的權限 dw.respawn." + idstr + "的ID不存在");
+		    			WarningGen.Warn(p.getName() + "的權限 dw.respawn." + idstr + "的ID不存在");
 		    		}else if(loc == null){
 		    			tpNormalSpawnPoint(p);
-		    			warn.Warn(p.getName() + "的權限 dw.respawn." + idstr + "的ID對應之座標已遺失或不存在");
+		    			WarningGen.Warn(p.getName() + "的權限 dw.respawn." + idstr + "的ID對應之座標已遺失或不存在");
 		    		}else if(core.getServer().getWorld(loc.getWorld().getName()) == null){
 		    			tpNormalSpawnPoint(p);
-		    			warn.Warn(p.getName() + "的權限  dw.respawn." + idstr + "的ID對應之世界在此伺服中已遺失或不存在");
+		    			WarningGen.Warn(p.getName() + "的權限  dw.respawn." + idstr + "的ID對應之世界在此伺服中已遺失或不存在");
 		    		}else{
 						removeNameTag(p);
 
@@ -121,7 +117,7 @@ public class PlayerFunctions {
 		    	    		public void run(){
 		    	    	    	p.teleport(loc);
 		    	    	    	
-		    	    		    if(!GV.didNotChoose(p)){
+		    	    		    if(!Global.didNotChoose(p)){
 		    	    		    	TurnBack(p);
 		    	    		    }
 		    	    		}
@@ -150,22 +146,22 @@ public class PlayerFunctions {
     		
     	}, 1);
 			
-		if(GV.isInTargetEntity(p)){
+		if(Global.isInTargetEntity(p)){
 
 			nms.setSpectate(p, p);
 
-			for(Entity target: GV.getTargetEntities()){
+			for(Entity target: Global.getTargetEntities()){
 
-				if(GV.getPlayerInTargetEntity(target).equals(p)){
-					GV.removeTargetEntity(target, p);
+				if(Global.getPlayerInTargetEntity(target).equals(p)){
+					Global.removeTargetEntity(target, p);
 				}
 			}
 		}
 
-		p.setGameMode(GV.getGameMode(p));
-		GV.removeGameMode(p);
-		GV.removeGhost(p);
-		GV.removeKilled(p);
+		p.setGameMode(Global.getGameMode(p));
+		Global.removeGameMode(p);
+		Global.removeGhost(p);
+		Global.removeKilled(p);
 		p.setFlySpeed(0.1f);
 		p.setFlying(false);
 
@@ -174,7 +170,7 @@ public class PlayerFunctions {
 	//傳到自然重生點
 	public void tpNormalSpawnPoint(Player p){
 			
-		if(GV.hasEssentials){
+		if(Global.hasEssentials){
 			
 			Essentials ess = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
 			User user = ess.getUser(p);
@@ -199,14 +195,14 @@ public class PlayerFunctions {
 						yaw = user.getHome(home).getYaw();
 						pitch = user.getHome(home).getPitch();
 					}catch(Exception e){
-						warn.Warn("在讀取" + p.getName() + "擁有的家時出了問題");
+						WarningGen.Warn("在讀取" + p.getName() + "擁有的家時出了問題");
 						e.printStackTrace();
 					}
 					
 					break;
 				}
 					
-				if(GV.isGhost(p)){
+				if(Global.isGhost(p)){
 					removeNameTag(p);
 				}
 
@@ -219,7 +215,7 @@ public class PlayerFunctions {
 			    	public void run(){
 						p.teleport(loc);
 						
-					    if(!GV.didNotChoose(p)){
+					    if(!Global.didNotChoose(p)){
 					    	TurnBack(p);
 					    }
 					    
@@ -234,7 +230,7 @@ public class PlayerFunctions {
 		//睡床點
 		if(p.getBedSpawnLocation() != null){
 			
-			if(GV.isGhost(p)){
+			if(Global.isGhost(p)){
 				removeNameTag(p);
 			}
 						
@@ -245,7 +241,7 @@ public class PlayerFunctions {
 	    		public void run(){
 	    			p.teleport(p.getBedSpawnLocation());
 					
-				    if(!GV.didNotChoose(p)){
+				    if(!Global.didNotChoose(p)){
 				    	TurnBack(p);
 				    }
 	    		}
@@ -258,7 +254,7 @@ public class PlayerFunctions {
 			double y = p.getWorld().getSpawnLocation().getY();
 			double z = p.getWorld().getSpawnLocation().getZ();
 			
-			if(GV.isGhost(p)){
+			if(Global.isGhost(p)){
 				removeNameTag(p);
 			}
 			
@@ -269,7 +265,7 @@ public class PlayerFunctions {
 	    		public void run(){
 	    			p.teleport(new Location(p.getWorld(), x, y, z));
 					
-				    if(!GV.didNotChoose(p)){
+				    if(!Global.didNotChoose(p)){
 				    	TurnBack(p);
 				    }
 	    		}

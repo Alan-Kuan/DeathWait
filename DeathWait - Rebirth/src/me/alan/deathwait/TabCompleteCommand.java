@@ -21,13 +21,12 @@ public class TabCompleteCommand implements TabCompleter{
 				
 			Player p = (Player)sender;
 			
-			List<String> arguments = Arrays.asList(new String[] { "reload", "list", "set", "respawnitem", "hereitem" });
-			List<String> re = Arrays.asList(new String[] { "reload", "respawnitem" });
+			List<String> arguments = Arrays.asList(new String[] { "reload", "list", "set", "instant", "assistant" });
 			List<String> reload = Arrays.asList(new String[] { "reload" });
-			List<String> respawnitem = Arrays.asList(new String[] { "respawnitem" });
+			List<String> instant = Arrays.asList(new String[] { "instant" });
 			List<String> list = Arrays.asList(new String[] { "list" });
 			List<String> set = Arrays.asList(new String[] { "set" });
-			List<String> here = Arrays.asList(new String[] { "hereitem" });
+			List<String> assistant = Arrays.asList(new String[] { "assistant" });
 			List<String> check = Arrays.asList(new String[] { "check" });
 			
 				
@@ -38,14 +37,8 @@ public class TabCompleteCommand implements TabCompleter{
 					if("".startsWith(args[0])){
 						return arguments;
 					}
-					if("re".startsWith(args[0])){
-						return re;
-					}
 					if("reload".startsWith(args[0])){
 						return reload;
-					}
-					if("respawnitem".startsWith(args[0])){
-						return respawnitem;
 					}
 					if("list".startsWith(args[0])){
 						return list;
@@ -53,8 +46,11 @@ public class TabCompleteCommand implements TabCompleter{
 					if("set".startsWith(args[0])){
 						return set;
 					}
-					if("hereitem".startsWith(args[0])){
-						return here;
+					if("instant".startsWith(args[0])){
+						return instant;
+					}
+					if("assistant".startsWith(args[0])){
+						return assistant;
 					}
 				}
 				

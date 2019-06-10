@@ -13,14 +13,11 @@ public class Data {
 
 	private FileConfiguration data;
 	private File file;
-	private WarningGen warn;
 	private Core core;
 	
 	public Data(Core core){
 		
 		this.core = core;
-		
-		warn = new WarningGen(core);
 		
 		file = new File(core.getDataFolder(), "data.yml");
 		try{
@@ -29,7 +26,7 @@ public class Data {
 			}
 		}catch(Exception e){
 			e.printStackTrace();
-			warn.Warn("在生成data.yml時出了問題");
+			WarningGen.Warn("在生成data.yml時出了問題");
 		}
 		
 		data = new YamlConfiguration();
@@ -56,14 +53,14 @@ public class Data {
 			}
 		}catch(Exception e){
 			e.printStackTrace();
-			warn.Warn("在生成data.yml時出了問題");
+			WarningGen.Warn("在生成data.yml時出了問題");
 		}
 		
 		try{
 			data.load(file);
 		}catch(Exception e){
 			e.printStackTrace();
-			warn.Warn("在讀取data.yml時出了問題");
+			WarningGen.Warn("在讀取data.yml時出了問題");
 		}
 	}
 	
@@ -73,7 +70,7 @@ public class Data {
 			data.save(file);
 		}catch(IOException e){
 			e.printStackTrace();
-			warn.Warn("在儲存data.yml時出了問題");
+			WarningGen.Warn("在儲存data.yml時出了問題");
 		}
 	}
 		

@@ -26,10 +26,10 @@ public class v1_12_R1 implements NMS{
 	    c.sendPacket(packetPlayOutTitle);
 	}
   
-	public void sendSubTitle(Player p, String text){
+	public void sendSubTitle(Player p, String text, int fade_in, int duration, int fade_out){
 		PlayerConnection c = ((CraftPlayer)p).getHandle().playerConnection;
     
-		PacketPlayOutTitle packetPlayOutTimes = new PacketPlayOutTitle(PacketPlayOutTitle.EnumTitleAction.TIMES, null, 0, 25, 0);
+		PacketPlayOutTitle packetPlayOutTimes = new PacketPlayOutTitle(PacketPlayOutTitle.EnumTitleAction.TIMES, null, fade_in, duration, fade_out);
 		c.sendPacket(packetPlayOutTimes);
     
 		IChatBaseComponent subtitle = IChatBaseComponent.ChatSerializer.a("{\"text\": \"" + text + "\"}");

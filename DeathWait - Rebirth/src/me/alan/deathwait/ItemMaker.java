@@ -35,7 +35,7 @@ public class ItemMaker{
 		}
 		
 		item.setItemMeta(meta);
-		item.setDurability((short)damage);
+		item.setDurability((short) damage);
 		return item;
 	}
 }
