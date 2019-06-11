@@ -8,6 +8,7 @@ import net.minecraft.server.v1_12_R1.ContainerAnvil;
 import net.minecraft.server.v1_12_R1.EntityHuman;
 import net.minecraft.server.v1_12_R1.EntityPlayer;
 import net.minecraft.server.v1_12_R1.PacketPlayOutOpenWindow;
+
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
@@ -42,6 +43,8 @@ public class AnvilGUI_v1_12_R1 implements AnvilGUI{
 		entityPlayer.activeContainer.windowId = containerId;
     
 		Inventory inv = fakeAnvil.getBukkitView().getTopInventory();
-		inv.setItem(0, this.im.createItem(Material.NAME_TAG, 0, name.replace("&", "/&").replace('§', '&'), lore, false));
+
+		inv.setItem(0, im.createItem(Material.NAME_TAG, 0, name.replace("&", "/&").replace('§', '&'), lore, false));
+		
 	}
 }

@@ -22,13 +22,13 @@ import me.alan.deathwait.nms.v1_12_R1;
 
 	備註: 如果擔心Essentials的重生系統影響到，可在Essentials將respawn-listener-priority:設為lowest
 	      
-	備忘錄: ess自殺相容性(目前知1.11.2沒問題)
-		         有dw.rescue可求救
-		          玩家斷線可做處理
-		         選目錄玩家之重登處理
-		         退出時名條未消失
-		         鐵砧會顯示更新後名稱
-    	         伺服重讀可替等待的玩家做處理
+	備忘錄:     ess自殺相容性(目前知1.11.2沒問題)
+			有dw.yell可求救
+			從target entity出來後，名條在倒數結束時有時不會消失
+			在target entity裡，登出後再登入，名條在倒數結束時有時不會消失
+			玩家斷線可做處理
+			選目錄玩家之重登處理
+			伺服重讀可替等待的玩家做處理
 
 *************************/
 
@@ -87,7 +87,7 @@ public class Core extends JavaPlugin {
 			Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + "[DeathWait] 偵測到此伺服安裝Essentials! 已啟動額外功能!");
 		}
 		
-		Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[DeathWait] V" + getDescription().getVersion() + "已啟動! " + ChatColor.DARK_AQUA + "by小恩AlanKuan");
+		Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[DeathWait] v" + getDescription().getVersion() + "已啟動! " + ChatColor.DARK_AQUA + "by小恩AlanKuan");
 	    
 		//顯示靈魂
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable(){
@@ -130,7 +130,7 @@ public class Core extends JavaPlugin {
 	}
 		
 	public void onDisable(){
-		Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "[DeathWait] V" + getDescription().getVersion() + "已關閉");
+		Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "[DeathWait] v" + getDescription().getVersion() + "已關閉");
 	}
 	
 	public PlayerFunctions getPlayerFunctionsClass(){

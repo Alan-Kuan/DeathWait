@@ -188,7 +188,9 @@ public class PlayerListener implements Listener{
 	    }
 	    
 	    //顯示名條
-	    pfunc.setNameTag(p);
+	    if(!Global.isInTargetEntity(p)) {
+	    	pfunc.setNameTag(p);
+	    }
 	    
 	    boolean needwait = true;
 	    
@@ -213,24 +215,27 @@ public class PlayerListener implements Listener{
 	    //需要等待
 	    if(needwait){
 	    	
+	    	int wait = config.getConfig().getInt("config.waiting seconds");
+	    	
+	    	nms.sendTitle(p, ChatColor.RED + "你已經死了", 0, wait*20, 0);
+	    	
 		    int countdown = core.getServer().getScheduler().scheduleSyncRepeatingTask(core, new Runnable(){
 		     
-		    	int wait = config.getConfig().getInt("config.waiting seconds") + 1;
+		    	int temp = wait;
 		    	
 		    	@Override
 		    	public void run(){
 		    		
-		    		Global.setLeftWaitingTimes(p, wait);
+		    		Global.setLeftWaitingTimes(p, temp);
 		    		
-		    		if(wait > 0){
-		    			wait--;
-
-		    			if(wait != 0){
-		    				String show = wait + "秒後復活";
+		    		if(temp > 0){
+		    				
+		    			String show = temp + "秒後復活";
 		            
-		    				nms.sendSubTitle(p, ChatColor.GOLD + show, 0, 25, 0);
-		    				nms.sendTitle(p, ChatColor.RED + "你已經死了");
-		    			}
+		    			nms.sendSubTitle(p, ChatColor.GOLD + show, 0, 25, 0);
+		    				
+		    			temp--;
+		    			
 		    		}else{
 		    			core.getServer().getScheduler().cancelTask(Global.getIds(p));
 		    			Global.removeIds(p);
@@ -239,7 +244,7 @@ public class PlayerListener implements Listener{
 		    		
 		    	}
 		    	
-		    }, 0L, 20L);
+		    }, 0, 20);
 		    Global.setIds(p, countdown);
 		    
 	    }else{
@@ -258,8 +263,10 @@ public class PlayerListener implements Listener{
 	    
 	    if(Global.isTargetEntity(ent)){
 	    	Player p = (Player) Global.getPlayerInTargetEntity(ent);
+	    	
 	    	nms.setSpectate(p, p);
 	    	Global.removeTargetEntity(ent, p);
+	    	pfunc.setNameTag(p);
 	    }
 	}
 	
@@ -274,12 +281,13 @@ public class PlayerListener implements Listener{
 	    	
 	    	nms.setSpectate(victim, victim);
 	    	Global.removeTargetEntity(p, victim);
+	    	pfunc.setNameTag(victim);
 	    }
 	    
 	    //如果退出的玩家是幽靈
 	    if(Global.isGhost(p)){
-
-			//pfunc.removeNameTag(p);
+	    	
+	    	pfunc.removeNameTag(p);
 	    	
 	    	data.set("players." + p.getUniqueId() + ".gamemode", Global.getGameMode(p).toString());
 	    	
@@ -317,44 +325,52 @@ public class PlayerListener implements Listener{
 		if(have_to_wait){
 			
 			boolean allow_moving = config.getConfig().getBoolean("config.allow moving in ghost mode");
-			
+
 			Global.addGhost(p);
 			Global.setGameMode(p, GameMode.valueOf(data.getConfig().getString("players." + p.getUniqueId() + ".gamemode")));
-						
+			
 			data.set("players." + p.getUniqueId() + ".gamemode", null);
 			
-			//顯示名條		    
-		    pfunc.setNameTag(p);
-		    
-			int countdown = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(core, new Runnable(){
-			    
-				int left = data.getConfig().getInt("players." + p.getUniqueId() + ".left waiting times");
-				
+		    Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(core, new Runnable(){
+		    	
 		    	@Override
 		    	public void run(){
 		    		
+					//顯示名條		    
+				    pfunc.setNameTag(p);
+
 		    		if(allow_moving){
 						p.setFlySpeed(0.1f);
 					}else{
 						p.setFlySpeed(0);
 					}
 		    		
-		    		Global.setLeftWaitingTimes(p, left);
-		    		
-		    		if(left > 0){
-		    			
-		    			left--;
+		    	}
+		    	
+		    }, 2);
+    		
+			int left = data.getConfig().getInt("players." + p.getUniqueId() + ".left waiting times");
+			
+			nms.sendTitle(p, ChatColor.RED + "由於上次在等待時登出，所以必須繼續等待", 0, left*20, 0);
+			
+			int countdown = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(core, new Runnable(){
+			    
+				int temp = left;
+				
+		    	@Override
+		    	public void run(){
 
-		    			if(left != 0){
-		    				String show = left + "秒後復活";
+		    		Global.setLeftWaitingTimes(p, temp);
+		    		
+		    		if(temp > 0){
+		    			
+		    			String show = temp + "秒後復活";
 		    				
-		    				nms.sendSubTitle(p, ChatColor.GOLD + show, 0, 25, 0);
-		    				nms.sendTitle(p, ChatColor.RED + "由於上次在等待時登出，所以必須繼續等待");
+		    			nms.sendSubTitle(p, ChatColor.GOLD + show, 0, 25, 0);
 		    				
-		    			}
+		    			temp--;
 		    			
 		    		}else{
-		    			
 		    			core.getServer().getScheduler().cancelTask(Global.getIds(p));
 		    			Global.removeIds(p);
 		    			data.set("players." + p.getUniqueId() + ".left waiting times", null);
@@ -364,7 +380,7 @@ public class PlayerListener implements Listener{
 		    		
 		    	}
 		    	
-		    }, 0L, 20L);
+		    }, 0, 20);
 		    Global.setIds(p, countdown);		    
 		}
 		
@@ -396,13 +412,13 @@ public class PlayerListener implements Listener{
 	    		try{
 	    			
 	    			String s = gui.getItem(31).getItemMeta().getDisplayName().replace("§9-第", "").replace("頁-", "");
-	    			final int nowat = Integer.parseInt(s);
+	    			final int page_num = Integer.parseInt(s);
 	    			
 	    			Bukkit.getScheduler().scheduleSyncDelayedTask(core, new Runnable(){
 	          
 	    				@Override
 	    				public void run(){
-	    					list.List(p, nowat);
+	    					list.List(p, page_num);
 	    				}
 	    				
 	    			}, 1L);
@@ -460,6 +476,8 @@ public class PlayerListener implements Listener{
 	    	lore = item.getItemMeta().getLore();
 	    }
 	    
+	    String id = lore.get(0).toString().replace("§bID:", "");
+	    
 	    e.setCancelled(true);
 	    
 	    //回到自然重生點
@@ -492,11 +510,11 @@ public class PlayerListener implements Listener{
 	    	try{
 	    			
 	    		String s = gui.getItem(31).getItemMeta().getDisplayName().replace("§9-第", "").replace("頁-", "");
-	    		int nowat = Integer.parseInt(s);
+	    		int page_num = Integer.parseInt(s);
 	    		
-	    		if (nowat - 1 > 0){
+	    		if (page_num - 1 > 0){
 	    			Global.addTurnPage(p);
-	    			list.List(p, nowat - 1);
+	    			list.List(p, page_num - 1);
 	    		}
 	    			
 	    	}catch(NumberFormatException ex){
@@ -513,14 +531,14 @@ public class PlayerListener implements Listener{
 	    	try{
 	    			
 	    		String s = gui.getItem(31).getItemMeta().getDisplayName().replace("§9-第", "").replace("頁-", "");
-	    		int nowat = Integer.parseInt(s);
+	    		int page_num = Integer.parseInt(s);
 	        
 	    		String totalstr = gui.getItem(31).getItemMeta().getLore().get(0).toString().replace("§2 共", "").replace("頁", "");
 	    		int total = Integer.parseInt(totalstr);
 	    			
-	    		if(nowat + 1 <= total){
+	    		if(page_num + 1 <= total){
 	    			Global.addTurnPage(p);
-	    			list.List(p, nowat + 1);
+	    			list.List(p, page_num + 1);
 	    		}
 	    			
 	    	}catch(NumberFormatException ex){
@@ -529,33 +547,53 @@ public class PlayerListener implements Listener{
 	    	}
 	    }
 	    	
-	    if((lore.size() == 10) && (slot <= 26)){
+	    //不是幽靈時，可以編輯自訂復活點
+	    if(!Global.isGhost(p) && (slot <= 26)){
 	    		
 	    	//重設復活點
 	    	if(click.equals(ClickType.SHIFT_RIGHT)){
-	    	    
-	    		Global.setTempName(name);
-	    		p.performCommand("dw set " + name.replace("&", "/&"));
+	    		
+	    		Location loc = p.getLocation();
+	    		
+	    		if(spawns.getConfig().isSet("spawns")){
+	    			  
+					spawns.set("spawns." + id + ".location", loc);
+					
+					nms.sendLocation(p, name, loc);
+					
+				}
+
+	    		ItemMeta meta = item.getItemMeta();
+	    		
+	    		lore.set(2, ChatColor.BLUE + "X座標:" + loc.getX());
+	    		lore.set(3, ChatColor.BLUE + "Y座標:" + loc.getY());
+	    		lore.set(4, ChatColor.BLUE + "Z座標:" + loc.getZ());
+	    		
+	    		meta.setLore(lore);
+	    		
+	    		item.setItemMeta(meta);
+	    		
+	    		e.setCurrentItem(item);
+	    		
 	    		p.playSound(p.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
 	    	}
 	    		
 	    	//移除復活點
 	    	if(click.equals(ClickType.SHIFT_LEFT)){
 	    	    
-	    		String id = lore.get(0).toString().replace("§bID:", "");
 	    		spawns.set("spawns." + id, null);
 	    		
 	    		p.playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
 	    			
 	    		try{
 	    			String s = gui.getItem(31).getItemMeta().getDisplayName().replace("§9-第", "").replace("頁-", "");
-	    			int nowat = Integer.parseInt(s);
+	    			int page_num = Integer.parseInt(s);
 	    				
-	    			if ((nowat > 1) && (slot == 0) && (gui.getItem(1) == null)) {
-	    				nowat--;
+	    			if ((page_num > 1) && (slot == 0) && (gui.getItem(1) == null)) {
+	    				page_num--;
 	    			}
 	    				
-	    			list.List(p, nowat);
+	    			list.List(p, page_num);
 	    		}catch(NumberFormatException ex){
 	    			ex.printStackTrace();
 	    			WarningGen.Warn("在獲取目前所在頁數時出了問題");
@@ -568,7 +606,6 @@ public class PlayerListener implements Listener{
 	    		
 	    		ItemStack icon = e.getCursor();
 	    		ItemMeta meta = icon.getItemMeta();
-	    		String id = lore.get(0).toString().replace("§bID:", "");
 	    		boolean glow = false;
 	    		
 	    		p.setItemOnCursor(new ItemStack(Material.AIR));
@@ -605,10 +642,12 @@ public class PlayerListener implements Listener{
 	    		info.add(ChatColor.GOLD + "更新前名稱:");
 	    		info.add(name);
 	    		info.add("");
-	    		info.add(ChatColor.GOLD + "更新後名稱:");
-	    		info.add(name);
+	    		info.add(ChatColor.DARK_RED + "備註: 若要在名稱中顯示&，請使用/&");
 	    		info.add("");
-	    		info.add(ChatColor.DARK_RED + "備註: 若要在名稱中顯示'&'，請打'/&'");
+	    		info.add(ChatColor.BLUE + "點擊左方的格子來回復原本名稱");
+	    		info.add(ChatColor.AQUA + "點擊中間的格子來預覽結果");
+	    		info.add(ChatColor.GREEN + "點擊右方的格子來確認更改");
+	    		info.add(ChatColor.DARK_GRAY + "ID:" + id);
 	        
 	    		anvil.openAnvil(p, name, info);
 	    		p.playSound(p.getLocation(), Sound.ITEM_ARMOR_EQUIP_DIAMOND, 1, 1);
@@ -623,7 +662,6 @@ public class PlayerListener implements Listener{
 	    		Global.removeNoChoose(p);
 	    	}
 	    	
-	    	String id = lore.get(0).toString().replace("§bID:", "");
 	    	Location loc = (Location) spawns.getConfig().get("spawns." + id + ".location");
 	    	
 	    	//先讓名條被刪除再傳送
@@ -667,6 +705,7 @@ public class PlayerListener implements Listener{
 	    
 	    if(item.getItemMeta().getLore().get(0).toString().equals(ChatColor.GOLD + "更新前名稱:")){
 	    	inv.setItem(0, null);
+	    	inv.setItem(1, null);
 	    	p.sendMessage(Global.Header + ChatColor.RED + "已取消重新命名復活點");
 	    	p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_AMBIENT, 1, 1);
 	    }
@@ -688,12 +727,14 @@ public class PlayerListener implements Listener{
 	    	return;
 	    }
 	    
-	    ItemStack item = e.getClickedInventory().getItem(0);
-	    if(!item.getItemMeta().hasLore()){
+	    ItemStack item0 = e.getClickedInventory().getItem(0);
+	    if(!item0.getItemMeta().hasLore()){
 	    	return;
 	    }
 	    
-	    if(!item.getItemMeta().getLore().get(0).toString().equals(ChatColor.GOLD + "更新前名稱:")){
+	    List<String> lore0 = item0.getItemMeta().getLore();
+	    
+	    if(!lore0.get(0).toString().equals(ChatColor.GOLD + "更新前名稱:")){
 	    	return;
 	    }
 	    
@@ -706,94 +747,109 @@ public class PlayerListener implements Listener{
 	    if(rawSlot == view.convertSlot(rawSlot)){
 	    	
 	    	if(rawSlot == 0){
-	    	  
+	    		
+	    		if(e.getInventory().getItem(1) != null){
+	    			e.getClickedInventory().setItem(1, null);
+	    		}
+	    		
 	    		p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
 	        
 	    	}else if(rawSlot == 1){
-	    	  
-	    		p.sendMessage(Global.Header + ChatColor.RED + "已取消重新命名復活點");
-	    		p.getOpenInventory().setItem(0, null);
-	    		p.closeInventory();
-	    		p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_AMBIENT, 1, 1);
-	        
-	    	}else if(rawSlot == 2){
-	    	  
+
 	    		if(e.getInventory().getItem(2) == null){
+	    			
+	    			//再次點擊關閉預覽
+	    			if(e.getInventory().getItem(1) != null){
+		    			e.getClickedInventory().setItem(1, null);
+		    			
+		    			p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 0);
+		    		}
+	    			
+	    			return;
+	    			
+	    		}
+	    		
+	    		ItemMeta meta2 = e.getClickedInventory().getItem(2).getItemMeta();
+	    		
+	    		String name0 = item0.getItemMeta().getDisplayName().replace("&", "§").replace("/§", "&");
+	    		
+	    		String name2 = meta2.getDisplayName().replace("&", "§").replace("/§", "&");
+	    		
+	    		List<String> lore1 = new ArrayList<String>();
+	    		
+	    		lore1.add(ChatColor.GOLD + "更新前名稱:");
+	    		lore1.add(name0);
+	    		lore1.add("");
+	    		lore1.add(ChatColor.GOLD + "更新後名稱:");
+	    		lore1.add(name2);
+	    		lore1.add("");
+	    		lore1.add(ChatColor.GREEN + "再次點擊此格關閉預覽");
+	    		
+	    		e.getClickedInventory().setItem(1, im.createItem(Material.ENCHANTED_BOOK, 0, ChatColor.YELLOW + "" + ChatColor.UNDERLINE + "名稱預覽", lore1, false));
+	    		
+	    		p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 0);
+	    		
+	    	}else if(rawSlot == 2){
+	    		
+	    		ItemStack item2 = e.getInventory().getItem(2);
+	    		
+	    		if(item2 == null){
 	    			return;
 	    		}
-	    	  
-	    		ItemStack button = e.getCurrentItem();
-	    		String name = "";
 	    		
-	    		if(button.getItemMeta().hasDisplayName()){
-	    			name = button.getItemMeta().getDisplayName().replace('&', '§').replace("/§", "&");
-	    		}
-	    	    
-	    		List<String> lore = new ArrayList<String>();
-	    	  
-	    		if(button.getItemMeta().hasLore()) {
-	    			lore = button.getItemMeta().getLore();
-	    		}
-	    	  
-	    		if(name.endsWith(" ")){
+	    		String newname = item2.getItemMeta().getDisplayName().replace("&", "§").replace("/§", "&");
+	    		
+	    		String id = lore0.get(8).replace(ChatColor.DARK_GRAY + "ID:", "");
+	    		
+	    		if(ChatColor.stripColor(newname).startsWith(" ") || ChatColor.stripColor(newname).endsWith(" ")){
 	    			p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
 	          
-	    			p.sendMessage(Global.Header + ChatColor.DARK_RED + "結尾不能有空格!");
+	    			p.sendMessage(Global.Header + ChatColor.DARK_RED + "開頭和結尾不能有空格!");
 	    			return;
 	    		}
 	    		
 	    		//將多個連續的空格變成一個
-	    		int i;
-	    		if(name.contains(" ")){
-	    			String[] l = name.split(" ");
-	    			name = "";
+	    		if(newname.contains(" ")){
+	    			String[] l = newname.split(" ");
+	    			newname = "";
 	    		  
-	    			for(i = 0; i < l.length; i++){
+	    			for(int i = 0; i < l.length; i++){
 	    			  
-	    				if(name != ""){
+	    				if(newname != ""){
 	    					if(!l[i].isEmpty()){
-	    						name = name + " " + l[i];
+	    						newname += " " + l[i];
 	    					}
 	    				}else{
-	    					name = l[i];
+	    					newname = l[i];
 	    				}
 	    			}
 	    		}
 	    	  
-	    		for(String id : spawns.getConfig().getConfigurationSection("spawns").getKeys(false)){
+	    		for(String temp_id : spawns.getConfig().getConfigurationSection("spawns").getKeys(false)){
 	          
-	    			if(spawns.getConfig().getString("spawns." + id + ".name").equals(name)){
+	    			if(spawns.getConfig().getString("spawns." + temp_id + ".name").equals(newname)){
 	    				p.sendMessage(Global.Header + ChatColor.DARK_RED + "這個名字已經用過了!");
 	    				p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
 	    				return;
 	    			}
 	    		}
 	        
-	    		if(ChatColor.stripColor(name).equals("")){
+	    		if(ChatColor.stripColor(newname).equals("")){
 	    			p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
 	    			p.sendMessage(Global.Header + ChatColor.DARK_RED + "你似乎沒有輸入文字或只輸入格式碼!");
 	    			return;
 	    		}
-	    		if(ChatColor.stripColor(name).contains("§")){
+	    		if(ChatColor.stripColor(newname).contains("§")){
 	    			p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
-	    			p.sendMessage(Global.Header + ChatColor.DARK_RED + "名稱中不可以含有不具意義格式碼!");
+	    			p.sendMessage(Global.Header + ChatColor.DARK_RED + "要在名稱中顯示&，請使用/&");
 	    			return;
 	    		}
 	    		
-	    		String oldname = lore.get(1).toString();
-	    		String rightid = "";
-	    		for(String id : spawns.getConfig().getConfigurationSection("spawns").getKeys(false)){
-	        	
-	    			if(spawns.getConfig().getString("spawns." + id + ".name").equals(oldname)){
-	    				rightid = id;
-	    				break;
-	    			}
-	    		}
+	    		spawns.set("spawns." + id + ".name", newname);
 	    		
-	    		spawns.set("spawns." + rightid + ".name", name);
-
-	    		p.sendMessage(Global.Header + ChatColor.GREEN + "已將復活點名稱改為 " + ChatColor.WHITE + ChatColor.BOLD + "[" + ChatColor.RESET + name + ChatColor.WHITE + ChatColor.BOLD + "]");
+	    		p.sendMessage(Global.Header + ChatColor.GREEN + "已將復活點名稱改為 " + ChatColor.WHITE + ChatColor.BOLD + "[" + ChatColor.RESET + newname + ChatColor.WHITE + ChatColor.BOLD + "]");
 	    		p.getOpenInventory().setItem(0, null);
+	    		p.getOpenInventory().setItem(1, null);
 	    		p.closeInventory();
 	    		p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_USE, 1, 1);
 	      	}
@@ -805,14 +861,14 @@ public class PlayerListener implements Listener{
 	public void onUseItem(PlayerInteractEvent e){
 			    
 	    Player p = e.getPlayer();
-	    PlayerInventory pi = p.getInventory();
+	    PlayerInventory inv = p.getInventory();
 	    Action action = e.getAction();
 	    ItemStack item;
 	    
 		if(e.getHand() == EquipmentSlot.HAND){
-			item = pi.getItemInMainHand();
+			item = inv.getItemInMainHand();
 	    }else if(e.getHand() == EquipmentSlot.OFF_HAND){
-	    	item = pi.getItemInOffHand();
+	    	item = inv.getItemInOffHand();
 	    }else{
 	    	return;
 	    }
@@ -856,9 +912,9 @@ public class PlayerListener implements Listener{
 	    		}else{
 	    			
 	    			if(e.getHand() == EquipmentSlot.HAND){
-	    				pi.setItemInMainHand(null);
+	    				inv.setItemInMainHand(null);
 	    			}else{
-	    				pi.setItemInOffHand(null);
+	    				inv.setItemInOffHand(null);
 	    			}
 
 	    		}
@@ -893,7 +949,7 @@ public class PlayerListener implements Listener{
 	    					entp.teleport(entp.getLocation().add(0.0, 0.2, 0.0));
 	    					pfunc.TurnBack(entp);
 	              
-	    					nms.sendTitle(entp, "");
+	    					nms.sendTitle(entp, "", 0, 0, 0);
 	    					nms.sendSubTitle(entp, 
 	    							ChatColor.DARK_GREEN + p.getName() + "用" + ChatColor.RESET + assistant_respawn_item.getItemMeta().getDisplayName() + ChatColor.DARK_GREEN + "讓你在這裡復活",
 	    							0, 40, 10);
@@ -904,9 +960,9 @@ public class PlayerListener implements Listener{
 	    					}
 
 	    	    			if(e.getHand() == EquipmentSlot.HAND){
-	    	    				pi.setItemInMainHand(null);
+	    	    				inv.setItemInMainHand(null);
 	    	    			}else{
-	    	    				pi.setItemInOffHand(null);
+	    	    				inv.setItemInOffHand(null);
 	    	    			}
 	              
 	    					break;

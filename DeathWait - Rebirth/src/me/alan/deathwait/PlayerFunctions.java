@@ -66,7 +66,7 @@ public class PlayerFunctions {
 	    				list.List(p, 1);
 	    			}
 	    			
-	    		}, 1L);
+	    		}, 1);
 	    	  
 	    	}else{
 	    	  
@@ -93,6 +93,7 @@ public class PlayerFunctions {
 	    			
 	    		}
 	    		
+	    		//沒有任何復活點的權限
 	    		if(idstr == ""){
 	    			tpNormalSpawnPoint(p);
 	    		}else{
@@ -145,7 +146,7 @@ public class PlayerFunctions {
     		}
     		
     	}, 1);
-			
+		
 		if(Global.isInTargetEntity(p)){
 
 			nms.setSpectate(p, p);
@@ -331,6 +332,7 @@ public class PlayerFunctions {
 	    nametag.setVisible(false);
 	    nametag.setSmall(true);
 	    nametag.setMarker(true);
+	    nametag.addScoreboardTag("dw_nametag");
 	    
 		if(core.version.equals("v1_10_R1")){
 			p.setPassenger(nametag);
@@ -340,22 +342,44 @@ public class PlayerFunctions {
 		
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void removeNameTag(Player p){
-		
-		if(core.version.equals("v1_10_R1")){
-			p.getPassenger().remove();
-		}else{
 
-			for(Entity passenger : p.getPassengers()){
+		if(!Global.isInTargetEntity(p)) {
+			
+			for(Entity ent : p.getNearbyEntities(1, 1, 1)) {
 				
-				if(passenger.getCustomName().equals(p.getName())){
-					passenger.remove();
+				if(ent.getCustomName().equals(p.getName()) && ent.getScoreboardTags().contains("dw_nametag")) {
+					ent.remove();
+					break;
 				}
 				
 			}
 			
 		}
+		
+		
+		
+		/*if(core.version.equals("v1_10_R1")){
+			
+			if(p.getPassenger() != null) {
+				p.getPassenger().remove();
+			}
+			
+		}else{
+			
+			if(p.getPassengers() != null) {
+				
+				for(Entity passenger : p.getPassengers()){
+					
+					if(passenger.getCustomName().equals(p.getName())){
+						passenger.remove();
+					}
+					
+				}
+				
+			}
+			
+		}*/
 		
 	}
 	

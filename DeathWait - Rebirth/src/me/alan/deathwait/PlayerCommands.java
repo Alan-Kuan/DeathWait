@@ -120,7 +120,7 @@ public class PlayerCommands implements CommandExecutor{
 					Location loc = p.getLocation();
 	        		  
 					if(spawns.getConfig().isSet("spawns")){
-	        			  
+	        			
 						for(String id : spawns.getConfig().getConfigurationSection("spawns").getKeys(false)){
 	        				  
 							if(spawns.getConfig().getString("spawns." + id + ".name").equals(name)){
@@ -147,15 +147,15 @@ public class PlayerCommands implements CommandExecutor{
 						id = spawns.getConfig().getInt("last ID") + 1;
 					}
 	        		  
-	        		  	spawns.set("spawns." + id + ".name", name);
-	        		  	spawns.set("spawns." + id + ".location", loc);
-	        		  	spawns.set("spawns." + id + ".icon.type", Material.GRASS.toString());
-	        		  	spawns.set("spawns." + id + ".icon.data", 0);
-	        		  	spawns.set("spawns." + id + ".icon.glowing", false);
-	        		  	spawns.set("last ID", Integer.valueOf(id));
-	        		  	
-	        		  	Global.setTempName("");
-	        		  	nms.sendLocation(p, name, loc);
+					spawns.set("spawns." + id + ".name", name);
+					spawns.set("spawns." + id + ".location", loc);
+					spawns.set("spawns." + id + ".icon.type", Material.GRASS.toString());
+					spawns.set("spawns." + id + ".icon.data", 0);
+					spawns.set("spawns." + id + ".icon.glowing", false);
+					spawns.set("last ID", Integer.valueOf(id));
+					
+					Global.setTempName("");
+					nms.sendLocation(p, name, loc);
 				}else{
 					p.sendMessage(Global.Header + ChatColor.RED + "用法: /dw set <復活點名稱>");
 				}

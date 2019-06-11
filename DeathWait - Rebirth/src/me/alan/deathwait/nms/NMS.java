@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 public abstract interface NMS{
 	
-	public abstract void sendTitle(Player paramPlayer, String paramString);
+	public abstract void sendTitle(Player paramPlayer, String paramString, int fade_in, int duration, int fade_out);
   
 	public abstract void sendSubTitle(Player paramPlayer, String paramString, int fade_in, int duration, int fade_out);
   

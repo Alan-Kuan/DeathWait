@@ -9,7 +9,7 @@ public class ItemMaker{
 	
 	public ItemStack createItem(Material m, int damage, String name, List<String> lore, boolean color){
 	
-		if((m == null) || (m == Material.AIR) || (name == null)){
+		if((m == null) || (m == Material.AIR)){
 			return null;
 		}
 	  

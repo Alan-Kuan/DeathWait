@@ -38,13 +38,13 @@ public class ListSpawns {
 		
 	}
 	
-	public void List(final Player p, int nowat){
+	public void List(final Player p, int page_num){
 		
 	    Inventory gui = Bukkit.createInventory(null, 36, ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "所有復活點");
-	    boolean button = config.getConfig().getBoolean("config.display button of default respawn point");
+	    boolean display_button = config.getConfig().getBoolean("config.display button of default respawn point");
 	    
 	    //計算頁數
-	    int pages;
+	    int pages = 1;
 	    if(spawns.getConfig().isSet("spawns")){
 	    	
 	    	int spawnpoints = 0;
@@ -72,20 +72,20 @@ public class ListSpawns {
 	    			pages++;
 	    		}
 	    	}else{
-	    		pages = 1;
 	    		
+	    		//如果都沒有自訂復活點，強制啟動自然重生點按鈕
 	    		if(spawnpoints == 0){
-	    			button = true;
+	    			display_button = true;
 	    		}
 	    	}
 	    	
 	    }else{
-	    	pages = 1;
 	    	
-	    	button = true;
+	    	//如果都沒有自訂復活點或資料遺失，強制啟動自然重生點按鈕
+	    	display_button = true;
 	    }
 	    
-	    if(nowat > 1){
+	    if(page_num > 1){
 	    	ItemStack back = im.createItem(Material.SKULL_ITEM, 3, ChatColor.BLUE + "上一頁", null, false);
 	    	SkullMeta backmeta = (SkullMeta)back.getItemMeta();
 	    	backmeta.setOwner("MHF_ArrowLeft");
@@ -96,9 +96,9 @@ public class ListSpawns {
 	    List<String> total = new ArrayList<String>();
 	    total.add(ChatColor.DARK_GREEN + " 共" + pages + "頁");
 	    
-	    gui.setItem(31, im.createItem(Material.PAPER, 0, ChatColor.BLUE + "-第" + nowat + "頁-", total, false));
+	    gui.setItem(31, im.createItem(Material.PAPER, 0, ChatColor.BLUE + "-第" + page_num + "頁-", total, false));
 	    
-	    if(nowat < pages){
+	    if(page_num < pages){
 	    	ItemStack next = im.createItem(Material.SKULL_ITEM, 3, ChatColor.BLUE + "下一頁", null, false);
 	    	SkullMeta nextmeta = (SkullMeta)next.getItemMeta();
 	    	nextmeta.setOwner("MHF_ArrowRight");
@@ -106,7 +106,7 @@ public class ListSpawns {
 	    	gui.setItem(32, next);
 	    }
 	    
-	    if(button){
+	    if(display_button){
 	    	List<String> lore = new ArrayList<String>();
 	    	lore.add("&b優先順序:");
 	    	
@@ -114,14 +114,17 @@ public class ListSpawns {
 		    	lore.add("&bEssentials的家(最早設定的) →");
 	    	}
 	    	
-	    	lore.add("&b睡床點 → 世界重生點");
+	    	lore.add("&b睡床點 →");
+	    	lore.add("&b世界重生點");
+	    	
 	    	ItemStack normal = im.createItem(Material.EMERALD, 0, ChatColor.DARK_GREEN + "自然重生點", lore, true);
 	      
 	    	gui.setItem(27, normal);
 	    }
+	    
 	    if(spawns.getConfig().isSet("spawns")){
-	    	int stop = nowat * 27;
-	    	int start = (nowat - 1) * 27;
+	    	int start = (page_num - 1) * 27;
+	    	int stop = page_num * 27;
 	    	int i = 0;
 	    	for(String id : spawns.getConfig().getConfigurationSection("spawns").getKeys(false)){
 	    		
@@ -181,16 +184,16 @@ public class ListSpawns {
 	    
 	    p.openInventory(gui);
 	    	    
-	    int timelimit = config.getConfig().getInt("config.time limit of browsing the list");
+	    int time_limit = config.getConfig().getInt("config.time limit of browsing the list");
 	    
-	    if((timelimit > 0) && !Global.haveChoosingCountingDownId(p) && Global.isGhost(p)){
-	    		    	
+	    if((time_limit > 0) && !Global.haveChoosingCountingDownId(p) && Global.isGhost(p)){
+	    	
 	    	final List<String> lore = new ArrayList<String>();
 	    	lore.add(ChatColor.RED + "若不做選擇會傳到自然重生點");
 	    	
-	    	int time = Bukkit.getScheduler().scheduleSyncRepeatingTask(core, new Runnable(){
+	    	int countdown = Bukkit.getScheduler().scheduleSyncRepeatingTask(core, new Runnable(){
 	    		
-	    		int wait = timelimit;
+	    		int temp = time_limit;
 	    		
 	    		@Override
 	    		public void run(){
@@ -200,22 +203,22 @@ public class ListSpawns {
 	    			//如果還沒選復活點，顯示倒數
 	    			if(Global.didNotChoose(p)){
 	    				
-	    				ItemStack watch = im.createItem(Material.WATCH, 0, ChatColor.DARK_RED + "你還剩" + wait + "秒做選擇", lore, false);
+	    				ItemStack watch = im.createItem(Material.WATCH, 0, ChatColor.DARK_RED + "你還剩" + temp + "秒做選擇", lore, false);
 						
 	    				//如果剩餘秒數 <= 64 就同時以數量顯示
-	    				if(wait <= 64){
-	    					watch.setAmount(wait);
+	    				if(temp <= 64){
+	    					watch.setAmount(temp);
 	    				}else{
 	    					watch.setAmount(64);
 	    				}
 	    				
 	    				p.getOpenInventory().setItem(34, watch);
 	    					    				
-	    				if(wait == 20){
+	    				if(temp == 20){
 	    					
     						p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
     						
-    					}else if(wait == 10){
+    					}else if(temp == 10){
     						
     						p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
     					    
@@ -226,13 +229,13 @@ public class ListSpawns {
     					    		p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
     					    	}
     					    	
-    					    }, 5L);
+    					    }, 5);
     					    
-    					}else if((wait == 5) || (wait == 4) || (wait == 3) || (wait == 2) || (wait == 1)){
+    					}else if(temp <= 5 || temp >= 1){
     						
     						p.playSound(loc, Sound.BLOCK_NOTE_HARP, 1, 1);
     						
-    					}else if(wait == 0){
+    					}else if(temp == 0){
     						Bukkit.getScheduler().cancelTask(Global.getChoosingCountingDownId(p));
 	    					Global.removeChoosingCountingDownId(p);
 	    					Global.removeNoChoose(p);
@@ -240,10 +243,10 @@ public class ListSpawns {
 	    					pfunc.TurnBack(p);
     					}
 	    				
-	    				wait--;
+	    				temp--;
 	    				
 	    			}else{
-	    			//如果選了復活點，終止倒數
+	    				//如果選了復活點，終止倒數
 	    				Bukkit.getScheduler().cancelTask(Global.getChoosingCountingDownId(p));
 	    				Global.removeChoosingCountingDownId(p);
 	    			}
@@ -251,7 +254,7 @@ public class ListSpawns {
 	    		}
 	    		
 	    	}, 0L, 20L);
-	    	Global.giveChoosingCountingDownId(p, time);
+	    	Global.giveChoosingCountingDownId(p, countdown);
 	    }
 	}
 }
