@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -21,19 +20,14 @@ import me.alan.deathwait.files.Spawns;
 
 public class ListSpawns {
 	
-	private Core core;
 	private Config config;
 	private Spawns spawns;
-	private PlayerFunctions pfunc;
 	private ItemMaker im;
 	
-	public ListSpawns(Core core, PlayerFunctions pfunc){
-		
-		this.core = core;
+	public ListSpawns(Core core){
 		
 		config = core.getConfigClass();
 		spawns = core.getSpawnsClass();
-		this.pfunc = pfunc;
 		im = new ItemMaker();
 		
 	}
@@ -183,78 +177,6 @@ public class ListSpawns {
 	    }
 	    
 	    p.openInventory(gui);
-	    	    
-	    int time_limit = config.getConfig().getInt("config.time limit of browsing the list");
 	    
-	    if((time_limit > 0) && !Global.haveChoosingCountingDownId(p) && Global.isGhost(p)){
-	    	
-	    	final List<String> lore = new ArrayList<String>();
-	    	lore.add(ChatColor.RED + "若不做選擇會傳到自然重生點");
-	    	
-	    	int countdown = Bukkit.getScheduler().scheduleSyncRepeatingTask(core, new Runnable(){
-	    		
-	    		int temp = time_limit;
-	    		
-	    		@Override
-	    		public void run(){
-	    			
-	    			Location loc = p.getLocation();
-	    			
-	    			//如果還沒選復活點，顯示倒數
-	    			if(Global.didNotChoose(p)){
-	    				
-	    				ItemStack watch = im.createItem(Material.WATCH, 0, ChatColor.DARK_RED + "你還剩" + temp + "秒做選擇", lore, false);
-						
-	    				//如果剩餘秒數 <= 64 就同時以數量顯示
-	    				if(temp <= 64){
-	    					watch.setAmount(temp);
-	    				}else{
-	    					watch.setAmount(64);
-	    				}
-	    				
-	    				p.getOpenInventory().setItem(34, watch);
-	    					    				
-	    				if(temp == 20){
-	    					
-    						p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-    						
-    					}else if(temp == 10){
-    						
-    						p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-    					    
-    					    Bukkit.getScheduler().scheduleSyncDelayedTask(core, new Runnable(){
-    					    	
-    					    	@Override
-    					    	public void run(){
-    					    		p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-    					    	}
-    					    	
-    					    }, 5);
-    					    
-    					}else if(temp <= 5 || temp >= 1){
-    						
-    						p.playSound(loc, Sound.BLOCK_NOTE_HARP, 1, 1);
-    						
-    					}else if(temp == 0){
-    						Bukkit.getScheduler().cancelTask(Global.getChoosingCountingDownId(p));
-	    					Global.removeChoosingCountingDownId(p);
-	    					Global.removeNoChoose(p);
-	    					pfunc.tpNormalSpawnPoint(p);
-	    					pfunc.TurnBack(p);
-    					}
-	    				
-	    				temp--;
-	    				
-	    			}else{
-	    				//如果選了復活點，終止倒數
-	    				Bukkit.getScheduler().cancelTask(Global.getChoosingCountingDownId(p));
-	    				Global.removeChoosingCountingDownId(p);
-	    			}
-	    			
-	    		}
-	    		
-	    	}, 0L, 20L);
-	    	Global.giveChoosingCountingDownId(p, countdown);
-	    }
 	}
 }

@@ -43,6 +43,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import me.alan.deathwait.anvilgui.AnvilGUI;
@@ -70,8 +72,8 @@ public class PlayerListener implements Listener{
 		config = core.getConfigClass();
 		spawns = core.getSpawnsClass();
 		data = core.getDataClass();
-		pfunc = core.getPlayerFunctionsClass();
-		list = new ListSpawns(core, pfunc);
+		pfunc = new PlayerFunctions(core);
+		list = new ListSpawns(core);
 		anvil = core.getAnvilGUIClass();
 		nms = core.getNMSClass();
 		im = new ItemMaker();
@@ -192,11 +194,11 @@ public class PlayerListener implements Listener{
 	    	pfunc.setNameTag(p);
 	    }
 	    
-	    boolean needwait = true;
+	    boolean need_wait = true;
 	    
 	    if(p.hasPermission("dw.bypass")){
 	    	
-	    	needwait = false;
+	    	need_wait = false;
 	    	
 	    //如果沒有權限才會扣直接復活額度
 	    }else{
@@ -206,21 +208,21 @@ public class PlayerListener implements Listener{
 		    	amount = data.getConfig().getInt("players." + p.getUniqueId() + ".quota");
 		    }
 		    if(amount > 0){
-		    	needwait = false;
+		    	need_wait = false;
 		    	data.set("players." + p.getUniqueId(), Integer.valueOf(amount - 1));
 		    }
 		    
 	    }
 	    	    
 	    //需要等待
-	    if(needwait){
+	    if(need_wait){
 	    	
 	    	int wait = config.getConfig().getInt("config.waiting seconds");
 	    	
 	    	nms.sendTitle(p, ChatColor.RED + "你已經死了", 0, wait*20, 0);
 	    	
-		    int countdown = core.getServer().getScheduler().scheduleSyncRepeatingTask(core, new Runnable(){
-		     
+	    	BukkitTask countdwon_task = new BukkitRunnable(){
+
 		    	int temp = wait;
 		    	
 		    	@Override
@@ -237,16 +239,16 @@ public class PlayerListener implements Listener{
 		    			temp--;
 		    			
 		    		}else{
-		    			core.getServer().getScheduler().cancelTask(Global.getIds(p));
-		    			Global.removeIds(p);
+		    			cancel();
 		    			pfunc.Respawn(p);
 		    		}
 		    		
 		    	}
 		    	
-		    }, 0, 20);
-		    Global.setIds(p, countdown);
-		    
+	    	}.runTaskTimer(core, 0, 20);
+	    	
+	    	Global.addCountdownTask(p, countdwon_task);
+	    	
 	    }else{
 	    	
 	    	pfunc.Respawn(p);
@@ -292,11 +294,12 @@ public class PlayerListener implements Listener{
 	    	data.set("players." + p.getUniqueId() + ".gamemode", Global.getGameMode(p).toString());
 	    	
 	    	if(Global.hasLeftWaitingTimes(p)){
-		    	core.getServer().getScheduler().cancelTask(Global.getIds(p));
+	    		
+		    	Global.cancelCountdownTask(p);
+		    	
 		    	data.set("players." + p.getUniqueId() + ".left waiting times", Global.getLeftWaitingTimes(p));
 		    	
 		    	Global.removeLeftWaitingTimes(p);
-		    	Global.removeIds(p);
 	    	}
 
 	    	Global.removeGameMode(p);
@@ -331,8 +334,8 @@ public class PlayerListener implements Listener{
 			
 			data.set("players." + p.getUniqueId() + ".gamemode", null);
 			
-		    Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(core, new Runnable(){
-		    	
+			new BukkitRunnable(){
+
 		    	@Override
 		    	public void run(){
 		    		
@@ -347,14 +350,14 @@ public class PlayerListener implements Listener{
 		    		
 		    	}
 		    	
-		    }, 2);
+			}.runTaskLater(core, 2);
     		
 			int left = data.getConfig().getInt("players." + p.getUniqueId() + ".left waiting times");
 			
 			nms.sendTitle(p, ChatColor.RED + "由於上次在等待時登出，所以必須繼續等待", 0, left*20, 0);
 			
-			int countdown = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(core, new Runnable(){
-			    
+			BukkitTask countdown_task = new BukkitRunnable(){
+
 				int temp = left;
 				
 		    	@Override
@@ -371,8 +374,7 @@ public class PlayerListener implements Listener{
 		    			temp--;
 		    			
 		    		}else{
-		    			core.getServer().getScheduler().cancelTask(Global.getIds(p));
-		    			Global.removeIds(p);
+		    			cancel();
 		    			data.set("players." + p.getUniqueId() + ".left waiting times", null);
 		    			pfunc.Respawn(p);
 		    			
@@ -380,8 +382,10 @@ public class PlayerListener implements Listener{
 		    		
 		    	}
 		    	
-		    }, 0, 20);
-		    Global.setIds(p, countdown);		    
+			}.runTaskTimer(core, 0, 20);
+			
+			Global.addCountdownTask(p, countdown_task);
+			
 		}
 		
 	}
@@ -414,14 +418,14 @@ public class PlayerListener implements Listener{
 	    			String s = gui.getItem(31).getItemMeta().getDisplayName().replace("§9-第", "").replace("頁-", "");
 	    			final int page_num = Integer.parseInt(s);
 	    			
-	    			Bukkit.getScheduler().scheduleSyncDelayedTask(core, new Runnable(){
-	          
+	    			new BukkitRunnable() {
+
 	    				@Override
 	    				public void run(){
 	    					list.List(p, page_num);
 	    				}
 	    				
-	    			}, 1L);
+	    			}.runTaskLater(core, 1);
 	    			
 	    		}catch(NumberFormatException ex){
 	    			
@@ -487,10 +491,10 @@ public class PlayerListener implements Listener{
 		    	pfunc.removeNameTag(p);
 	    		Global.removeNoChoose(p);
 	    	}
-	    	
+
 	    	//先讓名條被刪除再傳送
-	    	Bukkit.getScheduler().scheduleSyncDelayedTask(core, new Runnable(){
-	    		
+	    	new BukkitRunnable() {
+
 	    		@Override
 	    		public void run(){
 	    	    	pfunc.tpNormalSpawnPoint(p);
@@ -498,7 +502,7 @@ public class PlayerListener implements Listener{
 	    	    	p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
 	    		}
 	    		
-	    	}, 2);
+	    	}.runTaskLater(core, 2);
 	    	
 	    }
 	    
@@ -934,15 +938,16 @@ public class PlayerListener implements Listener{
 
     					Player entp = (Player) ent;
     					
-	    				if(Global.isGhost(entp) && (!Global.isInTargetEntity(entp))){
+	    				if(Global.isGhost(entp) && !Global.isInTargetEntity(entp)){
 	    					
 	    					if(Global.didNotChoose(entp)){
 	    						Global.removeNoChoose(entp);
+	    						Global.cancelTimeLimitTask(entp);
 	    						entp.closeInventory();
 	    					}
-	    					if(Global.hasIds(entp)){
-	    						core.getServer().getScheduler().cancelTask(((Integer) Global.getIds(entp)).intValue());
-	    						Global.removeIds(entp);
+	    					
+	    					if(Global.hasCountdownTask(entp)){
+		    					Global.cancelCountdownTask(entp);
 	    					}
 	    					
 	    					pfunc.removeNameTag(entp);

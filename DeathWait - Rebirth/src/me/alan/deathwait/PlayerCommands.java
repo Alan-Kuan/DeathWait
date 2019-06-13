@@ -35,7 +35,7 @@ public class PlayerCommands implements CommandExecutor{
 		data = core.getDataClass();
 		spawns = core.getSpawnsClass();
 		nms = core.getNMSClass();
-		list = new ListSpawns(core, core.getPlayerFunctionsClass());
+		list = new ListSpawns(core);
 		im = new ItemMaker();
 		
 	}

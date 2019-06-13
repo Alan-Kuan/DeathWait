@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import me.alan.deathwait.anvilgui.AnvilGUI;
 import me.alan.deathwait.anvilgui.AnvilGUI_v1_10_R1;
@@ -22,13 +23,15 @@ import me.alan.deathwait.nms.v1_12_R1;
 
 	備註: 如果擔心Essentials的重生系統影響到，可在Essentials將respawn-listener-priority:設為lowest
 	      
-	備忘錄:     ess自殺相容性(目前知1.11.2沒問題)
+	備忘錄:    ess自殺相容性(目前知1.11.2沒問題)
 			有dw.yell可求救
 			從target entity出來後，名條在倒數結束時有時不會消失
 			在target entity裡，登出後再登入，名條在倒數結束時有時不會消失
 			玩家斷線可做處理
 			選目錄玩家之重登處理
 			伺服重讀可替等待的玩家做處理
+			測試兩個玩家死在同一個怪物下
+			setGameMode null?
 
 *************************/
 
@@ -37,7 +40,6 @@ public class Core extends JavaPlugin {
 	private Config config;
 	private Data data;
 	private Spawns spawns;
-	private PlayerFunctions pfunc;
 	
 	private AnvilGUI anvil;
 	private NMS nms;
@@ -75,7 +77,6 @@ public class Core extends JavaPlugin {
 		config = new Config(this);
 		data = new Data(this);
 		spawns = new Spawns(this);
-		pfunc = new PlayerFunctions(this);
 		
 		getCommand("dw").setExecutor(new PlayerCommands(this));
 		getCommand("dw").setTabCompleter(new TabCompleteCommand());
@@ -90,21 +91,22 @@ public class Core extends JavaPlugin {
 		Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[DeathWait] v" + getDescription().getVersion() + "已啟動! " + ChatColor.DARK_AQUA + "by小恩AlanKuan");
 	    
 		//顯示靈魂
-		getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable(){
+		new BukkitRunnable(){
+			
+			boolean display_soul = config.getConfig().getBoolean("config.display soul of players");
 			
 			@Override
 			public void run(){
-
-				boolean show = config.getConfig().getBoolean("config.display soul of players");
-								
+				
 				for(Player p : getServer().getOnlinePlayers()){
-					if(show && Global.isGhost(p) && !Global.isInTargetEntity(p)){
+					if(display_soul && Global.isGhost(p) && !Global.isInTargetEntity(p)){
 						p.getWorld().spawnParticle(Particle.FLAME, p.getLocation().add(0.0, 1.0, 0.0), 50, 0.1, 0.1, 0.1, 0.01);
 					}
 				}
+				
 			}
 			
-		}, 0L, 20L);
+		}.runTaskTimer(this, 0, 20);
 	   
 	}
 	  
@@ -131,10 +133,6 @@ public class Core extends JavaPlugin {
 		
 	public void onDisable(){
 		Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "[DeathWait] v" + getDescription().getVersion() + "已關閉");
-	}
-	
-	public PlayerFunctions getPlayerFunctionsClass(){
-		return pfunc;
 	}
 	
 	public Config getConfigClass(){

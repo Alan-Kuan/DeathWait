@@ -9,6 +9,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 public class Global {
 
@@ -29,9 +30,9 @@ public class Global {
 	
 	private static List<Player> ghost = new ArrayList<Player>();
 	
-	private static HashMap<Player, Integer> ids = new HashMap<Player, Integer>();
+	private static HashMap<Player, BukkitTask> countdown_task = new HashMap<Player, BukkitTask>();
 	
-	private static HashMap<Player, Integer> limit_ids = new HashMap<Player, Integer>();
+	private static HashMap<Player, BukkitTask> time_limit_task = new HashMap<Player, BukkitTask>();
 	
 	//記錄玩家的等待秒數
 	private static HashMap<Player, Integer> wait = new HashMap<Player, Integer>();
@@ -103,36 +104,25 @@ public class Global {
 		ghost.remove(p);
 	}
 	
-	public static boolean hasIds(Player p){
-		return ids.containsKey(p);
+	public static boolean hasCountdownTask(Player p) {
+		return countdown_task.containsKey(p);
 	}
-	public static int getIds(Player p){
-		return ids.get(p);
+	public static void addCountdownTask(Player p, BukkitTask task) {
+		countdown_task.put(p, task);
 	}
-	public static void setIds(Player p, int id){
-		ids.put(p, id);
-	}
-	public static void removeIds(Player p){
-		ids.remove(p);
+	public static void cancelCountdownTask(Player p){
+		countdown_task.get(p).cancel();
+		countdown_task.remove(p);
 	}
 	
-	public static int getChoosingCountingDownId(Player p){
-		return limit_ids.get(p);
+	public static void addTimeLimitTask(Player p, BukkitTask task) {
+		time_limit_task.put(p, task);
 	}
-	public static boolean haveChoosingCountingDownId(Player p){
-		return limit_ids.containsKey(p);
+	public static void cancelTimeLimitTask(Player p){
+		time_limit_task.get(p).cancel();
+		time_limit_task.remove(p);
 	}
-	public static void giveChoosingCountingDownId(Player p, int id){
-		if(limit_ids.containsKey(p)){
-			limit_ids.replace(p, id);
-		}else{
-			limit_ids.put(p, id);
-		}
-	}
-	public static void removeChoosingCountingDownId(Player p){
-		limit_ids.remove(p);
-	}
-		
+	
 	public static boolean hasLeftWaitingTimes(Player p){
 		return wait.containsKey(p);
 	}
