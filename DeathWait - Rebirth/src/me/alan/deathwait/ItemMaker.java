@@ -18,8 +18,8 @@ public class ItemMaker{
 		
 		if(name != null){
 			if(color){
-				String show = name.replace('&', 'Â§');
-				meta.setDisplayName(show.replace("/Â§", "&"));
+				String show = name.replace('&', '¡±');
+				meta.setDisplayName(show.replace("/¡±", "&"));
 			}else{
 				meta.setDisplayName(name);
 			}
@@ -27,8 +27,8 @@ public class ItemMaker{
 		if(lore != null){
 			if(color) {
 				for(int i = 0; i <= lore.size() - 1; i++){
-					String show = ((String)lore.get(i)).replace('&', 'Â§');
-					lore.set(i, show.replace("/Â§", "&"));
+					String show = ((String)lore.get(i)).replace('&', '¡±');
+					lore.set(i, show.replace("/¡±", "&"));
 				}
 			}
 			meta.setLore(lore);

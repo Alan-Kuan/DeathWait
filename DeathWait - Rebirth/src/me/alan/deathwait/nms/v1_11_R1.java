@@ -40,21 +40,21 @@ public class v1_11_R1 implements NMS{
   
 	public void sendCommand(Player p, String text, String command){
 		PlayerConnection c = ((CraftPlayer)p).getHandle().playerConnection;
-		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"" + text + "\",\"extra\":[{\"text\":\"[\",\"bold\":\"true\"},{\"text\":\"åŸ·è¡Œ\",\"bold\":\"true\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"" + command + "\"}},{\"text\":\"]\",\"bold\":\"true\"}]}");
+		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"" + text + "\",\"extra\":[{\"text\":\"[\",\"bold\":\"true\"},{\"text\":\"°õ¦æ\",\"bold\":\"true\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"" + command + "\"}},{\"text\":\"]\",\"bold\":\"true\"}]}");
 		PacketPlayOutChat packet = new PacketPlayOutChat(json);
 		c.sendPacket(packet);
 	}
   
 	public void sendExample(Player p){
 		PlayerConnection c = ((CraftPlayer)p).getHandle().playerConnection;
-		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"Â§b/dw set <å¾©æ´»é»åç¨±> - æ–°å¢å¾©æ´»é» \",\"extra\":[{\"text\":\"[\",\"bold\":\"true\"},{\"text\":\"ç¯„ä¾‹\",\"bold\":\"true\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/dw set &aè¶…ç¥å¾©æ´»é»\"}},{\"text\":\"]\",\"bold\":\"true\"}]}");
+		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"¡±b/dw set <´_¬¡ÂI¦WºÙ> - ·s¼W´_¬¡ÂI \",\"extra\":[{\"text\":\"[\",\"bold\":\"true\"},{\"text\":\"½d¨Ò\",\"bold\":\"true\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/dw set &a¶W¯«´_¬¡ÂI\"}},{\"text\":\"]\",\"bold\":\"true\"}]}");
 		PacketPlayOutChat packet = new PacketPlayOutChat(json);
 		c.sendPacket(packet);
 	}
   
 	public void sendLocation(Player p, String name, Location loc){
 		PlayerConnection c = ((CraftPlayer)p).getHandle().playerConnection;
-		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"" + ChatColor.GOLD + "[DeathWait]" + "Â§aæˆåŠŸè¨­ç½®å¾©æ´»é» \",\"extra\":[{\"text\":\"[\",\"bold\":\"true\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"Â§6æ‰€è™•ä¸–ç•Œ: " + loc.getWorld().getName() + " \nÂ§aXåº§æ¨™: " + loc.getX() + " \nÂ§aYåº§æ¨™: " + loc.getY() + " \nÂ§aZåº§æ¨™: " + loc.getZ() + "\"}},{\"text\":\"Â§r" + name + "\",\"bold\":\"true\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"Â§6æ‰€è™•ä¸–ç•Œ: " + loc.getWorld().getName() + " \nÂ§aXåº§æ¨™: " + loc.getX() + " \nÂ§aYåº§æ¨™: " + loc.getY() + " \nÂ§aZåº§æ¨™: " + loc.getZ() + "\"}},{\"text\":\"]\",\"bold\":\"true\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"Â§6æ‰€è™•ä¸–ç•Œ: " + loc.getWorld().getName() + " \nÂ§aXåº§æ¨™: " + loc.getX() + " \nÂ§aYåº§æ¨™: " + loc.getY() + " \nÂ§aZåº§æ¨™: " + loc.getZ() + "\"}}]}");
+		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"" + ChatColor.GOLD + "[DeathWait]" + "¡±a¦¨¥\³]¸m´_¬¡ÂI \",\"extra\":[{\"text\":\"[\",\"bold\":\"true\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"¡±6©Ò³B¥@¬É: " + loc.getWorld().getName() + " \n¡±aX®y¼Ğ: " + loc.getX() + " \n¡±aY®y¼Ğ: " + loc.getY() + " \n¡±aZ®y¼Ğ: " + loc.getZ() + "\"}},{\"text\":\"¡±r" + name + "\",\"bold\":\"true\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"¡±6©Ò³B¥@¬É: " + loc.getWorld().getName() + " \n¡±aX®y¼Ğ: " + loc.getX() + " \n¡±aY®y¼Ğ: " + loc.getY() + " \n¡±aZ®y¼Ğ: " + loc.getZ() + "\"}},{\"text\":\"]\",\"bold\":\"true\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"¡±6©Ò³B¥@¬É: " + loc.getWorld().getName() + " \n¡±aX®y¼Ğ: " + loc.getX() + " \n¡±aY®y¼Ğ: " + loc.getY() + " \n¡±aZ®y¼Ğ: " + loc.getZ() + "\"}}]}");
 		PacketPlayOutChat packet = new PacketPlayOutChat(json);
 		c.sendPacket(packet);
 	}

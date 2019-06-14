@@ -44,7 +44,7 @@ public class AnvilGUI_v1_11_R1 implements AnvilGUI{
     
 		Inventory inv = fakeAnvil.getBukkitView().getTopInventory();
 
-		inv.setItem(0, im.createItem(Material.NAME_TAG, 0, name.replace("&", "/&").replace('Â§', '&'), lore, false));
+		inv.setItem(0, im.createItem(Material.NAME_TAG, 0, name.replace("&", "/&").replace('¡±', '&'), lore, false));
 		
 	}
 }
