@@ -15,6 +15,8 @@ public class Global {
 
 	public static String Header = ChatColor.GOLD + "[DeathWait]";
 	
+	public static String version = "";
+	
 	public static boolean hasEssentials = false;
 	
 	//用以確認相同復活點名稱是否被連續重複輸入
@@ -25,8 +27,6 @@ public class Global {
 	private static List<Player> nochoose = new ArrayList<Player>();
 	
 	private static List<Player> turnpage = new ArrayList<Player>();
-	
-	private static List<Player> killed = new ArrayList<Player>();
 	
 	private static List<Player> ghost = new ArrayList<Player>();
 	
@@ -42,9 +42,7 @@ public class Global {
 	
 	
 	public static String getTempName(){
-		
 		return temp_name;
-
 	}
 	public static void setTempName(String name){
 		temp_name = name;
@@ -82,16 +80,6 @@ public class Global {
 	}
 	public static void removeTurnPage(Player p){
 		turnpage.remove(p);
-	}
-	
-	public static boolean isKilled(Player p){
-		return killed.contains(p);
-	}
-	public static void addKilled(Player p){
-		killed.add(p);
-	}
-	public static void removeKilled(Player p){
-		killed.remove(p);
 	}
 	
 	public static boolean isGhost(Player p){

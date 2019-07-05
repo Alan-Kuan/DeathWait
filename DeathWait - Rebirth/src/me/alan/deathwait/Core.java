@@ -23,15 +23,17 @@ import me.alan.deathwait.nms.v1_12_R1;
 
 	備註: 如果擔心Essentials的重生系統影響到，可在Essentials將respawn-listener-priority:設為lowest
 	      
-	備忘錄:    ess自殺相容性(目前知1.11.2沒問題)
+	備忘錄:  ess自殺相容性(目前知1.11.2沒問題)
 			有dw.yell可求救
 			從target entity出來後，名條在倒數結束時有時不會消失
-			在target entity裡，登出後再登入，名條在倒數結束時有時不會消失
+			在target entity裡，登出後再登入，名條在倒數結束時不會消失
+			1.12.2的AnvilGUI不能用
 			玩家斷線可做處理
 			選目錄玩家之重登處理
 			伺服重讀可替等待的玩家做處理
 			測試兩個玩家死在同一個怪物下
-			setGameMode null?
+			避免滑行、Shift放置道具於GUI
+			/kill 處理
 
 *************************/
 
@@ -43,8 +45,8 @@ public class Core extends JavaPlugin {
 	
 	private AnvilGUI anvil;
 	private NMS nms;
-		
-	public String version;
+	
+	private PlayerFunctions pfunc;
 	
 	public void onEnable(){
 		
@@ -63,13 +65,13 @@ public class Core extends JavaPlugin {
 	        WarningGen.Warn("在啟動插件時為了產生DeathWait資料夾而出了問題");
 		}
 		
-		if(version.equals("v1_10_R1")){
+		if(Global.version.equals("v1_10_R1")){
 			anvil = new AnvilGUI_v1_10_R1();
 			nms = new v1_10_R1();
-		}else if(version.equals("v1_11_R1")){
+		}else if(Global.version.equals("v1_11_R1")){
 			anvil = new AnvilGUI_v1_11_R1();
 			nms = new v1_11_R1();
-		}else if(version.equals("v1_12_R1")){
+		}else if(Global.version.equals("v1_12_R1")){
 			anvil = new AnvilGUI_v1_12_R1();
 			nms = new v1_12_R1();
 		}
@@ -77,6 +79,8 @@ public class Core extends JavaPlugin {
 		config = new Config(this);
 		data = new Data(this);
 		spawns = new Spawns(this);
+		
+		pfunc = new PlayerFunctions(this);
 		
 		getCommand("dw").setExecutor(new PlayerCommands(this));
 		getCommand("dw").setTabCompleter(new TabCompleteCommand());
@@ -118,13 +122,13 @@ public class Core extends JavaPlugin {
 	    }
 	    
 	    try{
-	    	version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+	    	Global.version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 	    }catch (ArrayIndexOutOfBoundsException e){
 	    	WarningGen.Warn("在取得伺服器版本時出了問題");
 	    	return false;
 	    }
 	    
-	    if(!version.equals("v1_10_R1") && !version.equals("v1_11_R1") && !version.equals("v1_12_R1")){
+	    if(!Global.version.equals("v1_10_R1") && !Global.version.equals("v1_11_R1") && !Global.version.equals("v1_12_R1")){
 	    	return false;
 	    }
 	    
@@ -145,6 +149,10 @@ public class Core extends JavaPlugin {
 	
 	public Data getDataClass(){
 		return data;
+	}
+
+	public PlayerFunctions getPlayerFunctionsClass() {
+		return pfunc;
 	}
 	
 	public AnvilGUI getAnvilGUIClass(){

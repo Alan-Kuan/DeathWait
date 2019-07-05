@@ -2,6 +2,7 @@ package me.alan.deathwait;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -10,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Egg;
@@ -24,8 +26,12 @@ import org.bukkit.entity.SpectralArrow;
 import org.bukkit.entity.SplashPotion;
 import org.bukkit.entity.TippedArrow;
 import org.bukkit.entity.WitherSkull;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -40,11 +46,13 @@ import me.alan.deathwait.nms.NMS;
 public class PlayerFunctions {
 
 	private Core core;
+	
 	private Config config;
 	private Spawns spawns;
-	private NMS nms;
-	private ListSpawns list;
+	
 	private ItemMaker im;
+	
+	private NMS nms;
 	
 	public PlayerFunctions(Core core){
 		
@@ -52,9 +60,10 @@ public class PlayerFunctions {
 
 		config = core.getConfigClass();
 		spawns = core.getSpawnsClass();
-		nms = core.getNMSClass();
-		list = new ListSpawns(core);
+
 		im = new ItemMaker();
+		
+		nms = core.getNMSClass();
 		
 	}
 		
@@ -64,108 +73,116 @@ public class PlayerFunctions {
 		boolean enable_custom_location = config.getConfig().getBoolean("config.enable custom location");
 		boolean enable_default_respawn_button = config.getConfig().getBoolean("config.display button of default respawn point");
 
+		Location loc = getNormalSpawnPoint(p);
+		
 	    if(enable_custom_location){
-
+	    	
+	    	boolean custom_spawn_points_exist = false;
+	    	
+	    	//如果有自訂復活點
+	    	if(spawns.getConfig().isSet("spawns")) {
+	    		custom_spawn_points_exist = !spawns.getConfig().getConfigurationSection("spawns").getKeys(true).isEmpty();
+	    	}
+	    	
     		//如果 有權限 且 有復活點可挑
-	    	if(p.hasPermission("dw.gui") && (enable_default_respawn_button || (!spawns.getConfig().getConfigurationSection("spawns").getKeys(true).isEmpty()))){
+	    	if(p.hasPermission("dw.gui") && (enable_default_respawn_button || custom_spawn_points_exist)){
 
 	    	    int time_limit = config.getConfig().getInt("config.time limit of browsing the list");
 	    		
 	    		Global.addNoChoose(p);
-	          
+
 	    		new BukkitRunnable() {
 
 	    			@Override
 	    			public void run(){
 	    				
-	    				list.List(p, 1);
-	    				
-	    				if(time_limit > 0) {
-	    					choosingCountDown(p, time_limit);
-	    				}
+	    				openSpawnList(p, 1);
 	    				
 	    			}
 	    			
 	    		}.runTaskLater(core, 1);
+
+				if(time_limit > 0) {
+					choosingCountDown(p, time_limit);
+				}
+				
+	    		return;
 	    		
 	    	}else{
-	    	  
-	    		String idstr = "";
+	    	
+	    		String id_str = "no permission";
 	    		int id = 0;
-	        
+	    		
 	    		for(PermissionAttachmentInfo perm : p.getEffectivePermissions()){
 	    			
-	    			idstr = "";
-	    			
 	    			if(perm.getPermission().startsWith("dw.respawn.")){
-	    				idstr = perm.getPermission().toString().replace("dw.respawn.", "");
+	    				id_str = perm.getPermission().toString().replace("dw.respawn.", "");
 	    				
 	    				try{
-	    	    			id = Integer.parseInt(idstr);
+	    	    			id = Integer.parseInt(id_str);
 	    	    		}catch(NumberFormatException ex){
 	    	    			ex.printStackTrace();
-	    	    			WarningGen.Warn("你在" + p.getName() + "的權限設定上出現dw.respawn." + idstr + "的情形");
+	    	    			WarningGen.Warn("你在" + p.getName() + "的權限設定上出現dw.respawn." + id_str + "的情形");
 	    	    			continue;
 	    	    		}
 	    				
 	    				break;
 	    			}
-	    			
+
+	    			id_str = "no permission";
+	    				    			
 	    		}
 	    		
-	    		//沒有任何復活點的權限
-	    		if(idstr == ""){
-	    			tpNormalSpawnPoint(p);
-	    		}else{
-	    			Location loc = (Location) spawns.getConfig().get("spawns." + idstr + ".location");
+	    		//有某個復活點的權限
+	    		if(!id_str.equals("no permission")){
+	    			
+	    			loc = (Location) spawns.getConfig().get("spawns." + id_str + ".location");
 	    			
 	    			if(spawns.getConfig().getInt("last ID") < id){
-		    			tpNormalSpawnPoint(p);
-		    			WarningGen.Warn(p.getName() + "的權限 dw.respawn." + idstr + "的ID不存在");
+		    			loc = getNormalSpawnPoint(p);
+		    			WarningGen.Warn(p.getName() + "的權限 dw.respawn." + id_str + "的ID不存在");
 		    		}else if(loc == null){
-		    			tpNormalSpawnPoint(p);
-		    			WarningGen.Warn(p.getName() + "的權限 dw.respawn." + idstr + "的ID對應之座標已遺失或不存在");
+		    			loc = getNormalSpawnPoint(p);
+		    			WarningGen.Warn(p.getName() + "的權限 dw.respawn." + id_str + "的ID對應之座標已遺失或不存在");
 		    		}else if(core.getServer().getWorld(loc.getWorld().getName()) == null){
-		    			tpNormalSpawnPoint(p);
-		    			WarningGen.Warn(p.getName() + "的權限  dw.respawn." + idstr + "的ID對應之世界在此伺服中已遺失或不存在");
-		    		}else{
-						removeNameTag(p);
-
-		    	    	//先讓名條被刪除再傳送
-		    	    	Bukkit.getScheduler().scheduleSyncDelayedTask(core, new Runnable(){
-		    	    		
-		    	    		@Override
-		    	    		public void run(){
-		    	    	    	p.teleport(loc);
-		    	    	    	
-		    	    		    if(!Global.didNotChoose(p)){
-		    	    		    	TurnBack(p);
-		    	    		    }
-		    	    		}
-		    	    		
-		    	    	}, 2);
+		    			loc = getNormalSpawnPoint(p);
+		    			WarningGen.Warn(p.getName() + "的權限  dw.respawn." + id_str + "的ID對應之世界在此伺服中已遺失或不存在");
 		    		}
+	    			
 	    		}
 
 	    	}
 	      
-	    }else{
-	    	tpNormalSpawnPoint(p);
 	    }
+	    
+	    removeNameTag(p);
+	    
+	    final Location temp_loc = loc;
+	    
+	    new BukkitRunnable() {
+	    	
+	    	@Override
+	    	public void run() {
+	    	    p.teleport(temp_loc);
+	    		
+	    	    TurnBack(p);
+	    	}
+	    	
+	    }.runTaskLater(core, 2);
 	    
 	}
 	
 	//恢復原狀
 	public void TurnBack(final Player p){
-				
-		Bukkit.getScheduler().scheduleSyncDelayedTask(core, new Runnable(){
-    		
-    		@Override
-    		public void run(){
-    	    	p.setFireTicks(0);
-    		}
-    		
-    	}, 1);
+
+		new BukkitRunnable() {
+			
+			@Override
+			public void run() {
+				p.setFireTicks(0);
+			}
+			
+		}.runTaskLater(core, 1);
 		
 		if(Global.isInTargetEntity(p)){
 
@@ -182,14 +199,13 @@ public class PlayerFunctions {
 		p.setGameMode(Global.getGameMode(p));
 		Global.removeGameMode(p);
 		Global.removeGhost(p);
-		Global.removeKilled(p);
 		p.setFlySpeed(0.1f);
 		p.setFlying(false);
 
 	}
 		
-	//傳到自然重生點
-	public void tpNormalSpawnPoint(Player p){
+	//取得自然重生點
+	public Location getNormalSpawnPoint(Player p){
 				
 		if(Global.hasEssentials){
 			
@@ -215,36 +231,20 @@ public class PlayerFunctions {
 						z = user.getHome(home).getZ();
 						yaw = user.getHome(home).getYaw();
 						pitch = user.getHome(home).getPitch();
+
+						Location loc = new Location(w, x, y, z, yaw, pitch);
+						
+						return loc;
+						
 					}catch(Exception e){
+						
 						WarningGen.Warn("在讀取" + p.getName() + "擁有的家時出了問題");
 						e.printStackTrace();
-					}
-					
-					break;
-				}
-				
-				if(Global.isGhost(p)){
-					removeNameTag(p);
-				}
-				
-				Location loc = new Location(w, x, y, z, yaw, pitch);
-				
-				new BukkitRunnable() {
-					
-					@Override
-					public void run() {
 
-						p.teleport(loc);
-						
-					    if(!Global.didNotChoose(p)){
-					    	TurnBack(p);
-					    }
-					    
+						break;
 					}
 					
-				}.runTaskLater(core, 2);
-				
-				return;
+				}
 				
 			}
 			
@@ -254,50 +254,16 @@ public class PlayerFunctions {
 		//睡床點
 		if(p.getBedSpawnLocation() != null){
 			
-			if(Global.isGhost(p)){
-				removeNameTag(p);
-			}
-			
 			Location loc = p.getBedSpawnLocation();
 
-			new BukkitRunnable() {
-				
-				@Override
-				public void run() {
-
-					p.teleport(loc);
-					
-				    if(!Global.didNotChoose(p)){
-				    	TurnBack(p);
-				    }
-				    
-				}
-				
-			}.runTaskLater(core, 2);
+			return loc;
 			
 		//世界重生點
-		}else {
+		}else{
 
-			if(Global.isGhost(p)){
-				removeNameTag(p);
-			}
-			
 			Location loc = p.getWorld().getSpawnLocation();
 
-			new BukkitRunnable() {
-				
-				@Override
-				public void run() {
-
-					p.teleport(loc);
-					
-				    if(!Global.didNotChoose(p)){
-				    	TurnBack(p);
-				    }
-				    
-				}
-				
-			}.runTaskLater(core, 2);
+			return loc;
 			
 		}
 		
@@ -309,8 +275,8 @@ public class PlayerFunctions {
 				((killer instanceof ShulkerBullet)) || ((killer instanceof WitherSkull)) || ((killer instanceof Fireball)) || ((killer instanceof Snowball)) || ((killer instanceof Egg))){
 			
 			try{
-				Projectile projectile = (Projectile)killer;
-				shooter = (Entity)projectile.getShooter();
+				Projectile projectile = (Projectile) killer;
+				shooter = (Entity)(projectile.getShooter());
 			}catch(Exception e){
 				return null;
 			}
@@ -324,7 +290,7 @@ public class PlayerFunctions {
 	@SuppressWarnings("deprecation")
 	public double getMaxHealth(Player p){
 		
-		if(core.version.equals("v1_10_R1")){
+		if(Global.version.equals("v1_10_R1")){
 			return p.getMaxHealth();
 		}else{
 			return p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
@@ -335,7 +301,7 @@ public class PlayerFunctions {
 	@SuppressWarnings("deprecation")
 	public void kickPassenger(Player p){
 		
-		if(core.version.equals("v1_10_R1")){
+		if(Global.version.equals("v1_10_R1")){
 			p.getPassenger().teleport(p.getPassenger().getLocation());
 		}else{
 						
@@ -361,7 +327,7 @@ public class PlayerFunctions {
 	    nametag.setMarker(true);
 	    nametag.addScoreboardTag("dw_nametag");
 	    
-		if(core.version.equals("v1_10_R1")){
+		if(Global.version.equals("v1_10_R1")){
 			p.setPassenger(nametag);
 		}else{
 			p.addPassenger(nametag);
@@ -373,7 +339,7 @@ public class PlayerFunctions {
 
 		if(!Global.isInTargetEntity(p)) {
 			
-			for(Entity ent : p.getNearbyEntities(1, 1, 1)) {
+			for(Entity ent : p.getNearbyEntities(0.5, 1.5, 0.5)) {
 				
 				if(ent.getCustomName().equals(p.getName()) && ent.getScoreboardTags().contains("dw_nametag")) {
 					ent.remove();
@@ -386,6 +352,185 @@ public class PlayerFunctions {
 		
 	}
 	
+	//開啟復活點目錄
+	@SuppressWarnings("deprecation")
+	public void openSpawnList(final Player p, int page_num){
+		
+	    Inventory gui = Bukkit.createInventory(null, 36, ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "所有復活點");
+	    boolean enable_default_respawn_button = config.getConfig().getBoolean("config.display button of default respawn point");
+	    
+	    //計算頁數
+	    int pages = 1;
+	    if(spawns.getConfig().isSet("spawns")){
+	    	
+	    	int spawnpoints = 0;
+	    	for(String id : spawns.getConfig().getConfigurationSection("spawns").getKeys(false)){
+
+	    		//如果玩家有dw.gui.own必須只算有權限的復活點數量
+	    		if(Global.isGhost(p) && p.hasPermission("dw.gui.own")){
+	    			
+	    			if(p.hasPermission("dw.respawn." + id)){
+	    				spawnpoints++;
+	    			}
+	    			
+	    		}else{
+
+		    		spawnpoints++;
+		    		
+	    		}
+	    		
+	    	}
+	    	
+	    	if(spawnpoints > 27){
+	    		int remainder = spawnpoints % 27;
+	    		pages = spawnpoints / 27;
+	    		
+	    		if(remainder > 0){
+	    			pages++;
+	    		}
+	    	}
+	    	
+	    	//如果沒有任何復活點或沒有擁有任何復活點權限
+	    	if(spawnpoints == 0 && !enable_default_respawn_button && Global.isGhost(p)) {
+	    		
+	    	    removeNameTag(p);
+	    	    
+	    	    Global.cancelTimeLimitTask(p);
+	    	    
+	    	    final Location loc = getNormalSpawnPoint(p);
+	    	    
+	    	    new BukkitRunnable() {
+	    	    	
+	    	    	@Override
+	    	    	public void run() {
+	    	    	    p.teleport(loc);
+	    	    		
+	    	    	    TurnBack(p);
+	    	    	}
+	    	    	
+	    	    }.runTaskLater(core, 2);
+	    	    
+	    	    return;
+	    	    
+	    	}
+	    	
+	    }
+	    
+	    if(page_num > 1){
+	    	ItemStack previous = im.createItem(Material.SKULL_ITEM, 3, ChatColor.BLUE + "上一頁", null, false);
+	    	SkullMeta previous_meta = (SkullMeta) previous.getItemMeta();
+	    	
+	    	if(Global.version.equals("v1_12_R1")) {
+	    		previous_meta.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString("a68f0b648d144000a95f4b9ba14f8df9")));
+	    	}else {
+		    	previous_meta.setOwner("MHF_ArrowLeft");
+	    	}
+	    	
+	    	previous.setItemMeta(previous_meta);
+	    	gui.setItem(30, previous);
+	    }
+	    
+	    List<String> total = new ArrayList<String>();
+	    total.add(ChatColor.DARK_GREEN + " 共" + pages + "頁");
+	    
+	    gui.setItem(31, im.createItem(Material.PAPER, 0, ChatColor.BLUE + "-第" + page_num + "頁-", total, false));
+	    
+	    if(page_num < pages){
+	    	ItemStack next = im.createItem(Material.SKULL_ITEM, 3, ChatColor.BLUE + "下一頁", null, false);
+	    	SkullMeta next_meta = (SkullMeta)next.getItemMeta();
+	    	
+	    	if(Global.version.equals("v1_12_R1")) {
+	    		next_meta.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString("50c8510b5ea04d60be9a7d542d6cd156")));
+	    	}else {
+	    		next_meta.setOwner("MHF_ArrowRight");
+	    	}
+	    	
+	    	next.setItemMeta(next_meta);
+	    	gui.setItem(32, next);
+	    }
+	    
+	    if(enable_default_respawn_button){
+	    	List<String> lore = new ArrayList<String>();
+	    	lore.add("&b優先順序:");
+	    	
+	    	if(Global.hasEssentials){
+		    	lore.add("&bEssentials的家(最早設定的) →");
+	    	}
+	    	
+	    	lore.add("&b睡床點 →");
+	    	lore.add("&b世界重生點");
+	    	
+	    	ItemStack normal = im.createItem(Material.EMERALD, 0, ChatColor.DARK_GREEN + "自然重生點", lore, true);
+	      
+	    	gui.setItem(27, normal);
+	    }
+	    
+	    if(spawns.getConfig().isSet("spawns")){
+	    	
+	    	int start = (page_num - 1) * 27;
+	    	int stop = page_num * 27;
+	    	int i = 0;
+	    	
+	    	for(String id : spawns.getConfig().getConfigurationSection("spawns").getKeys(false)){
+	    		
+	    		if(i == stop){
+	    			break;
+	    		}
+	    		
+	    		//如果玩家有dw.gui.own必須跳過顯示沒有權限的復活點
+	    		if(Global.isGhost(p) && p.hasPermission("dw.gui.own")){
+	    			if(!p.hasPermission("dw.respawn." + id)){
+	    				continue;
+	    			}
+	    		}
+	    		
+	    		Location loc = (Location) spawns.getConfig().get("spawns." + id + ".location");
+	    		String name = spawns.getConfig().getString("spawns." + id + ".name");
+	    		List<String> lore = new ArrayList<String>();
+	    		
+	    		lore.add(ChatColor.AQUA + "ID:" + id);
+	    		lore.add(ChatColor.GOLD + "所處世界:" + loc.getWorld().getName());
+	    		lore.add(ChatColor.BLUE + "X座標:" + loc.getX());
+	    		lore.add(ChatColor.BLUE + "Y座標:" + loc.getY());
+	    		lore.add(ChatColor.BLUE + "Z座標:" + loc.getZ());
+	    		if(!Global.isGhost(p)){
+	    			lore.add(ChatColor.GREEN + "《左鍵》傳送至復活點");
+	    			lore.add(ChatColor.GREEN + "《右鍵》重新命名復活點");
+	    			lore.add(ChatColor.GREEN + "《換掉此格道具》將此復活點的圖示改成你放的道具");
+	    			lore.add(ChatColor.RED + "《Shift+右鍵》將復活點座標設為現在位置");
+	    			lore.add(ChatColor.RED + "《Shift+左鍵》將此復活點座標移除");
+	    		}
+	    			
+	    		//防止舊版沒有資料
+	    		if(spawns.getConfig().get("spawns." + id + ".icon") == null){
+	        	  	spawns.set("spawns." + id + ".icon.type", Material.GRASS.toString());
+	        	  	spawns.set("spawns." + id + ".icon.data", 0);
+	        	  	spawns.set("spawns." + id + ".icon.glowing", false);
+	    		}
+
+	    		Material icon_type = Material.getMaterial(spawns.getConfig().getString("spawns." + id + ".icon.type"));
+	    		int icon_data = spawns.getConfig().getInt("spawns." + id + ".icon.data");
+	    		boolean icon_glowing = spawns.getConfig().getBoolean("spawns." + id + ".icon.glowing");
+	    			
+	    		ItemStack icon = im.createItem(icon_type, icon_data, name, lore, false);
+	    			
+	    		if(icon_glowing){
+	    			ItemMeta meta = icon.getItemMeta();
+	    			meta.addEnchant(Enchantment.DURABILITY, 1, false);
+	    			meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+	    			icon.setItemMeta(meta);
+	    		}
+	    			
+	    		gui.setItem(i - start, icon);
+
+		    	i++;
+	    	}
+	    }
+
+	    p.openInventory(gui);
+	    
+	}
+	
 	//挑選復活點的時間限制
 	public void choosingCountDown(Player p, int time_limit) {
 		
@@ -393,14 +538,14 @@ public class PlayerFunctions {
 	    lore.add(ChatColor.RED + "若不做選擇會傳到自然重生點");
 	    
 		Location loc = p.getLocation();
-			
+		
 		BukkitTask time_limit_task = new BukkitRunnable() {
-				
+			
 			int temp = time_limit;
 				
 			@Override
 	    	public void run(){
-	    			
+	    		
 	    		//如果還沒選復活點，顯示倒數
 	    		if(Global.didNotChoose(p)){
 	    			
@@ -427,15 +572,15 @@ public class PlayerFunctions {
     					
     					p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
     				    
-    				    Bukkit.getScheduler().scheduleSyncDelayedTask(core, new Runnable(){
-    					   	
-    					   	@Override
-    				    	public void run(){
-    				    		p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-    				    	}
-    				    	
-    				    }, 5);
-    				    
+    					new BukkitRunnable() {
+    						
+    						@Override
+    						public void run() {
+    							p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+    						}
+    						
+    					}.runTaskLater(core, 5);
+    					
     				}else if(temp >= 1 && temp <= 5){
     					
     					p.playSound(loc, Sound.BLOCK_NOTE_HARP, 1, 1);
@@ -443,7 +588,7 @@ public class PlayerFunctions {
     				}else if(temp == 0){
     					cancel();
 	    				Global.removeNoChoose(p);
-	    				tpNormalSpawnPoint(p);
+	    				p.teleport(getNormalSpawnPoint(p));
 	    				TurnBack(p);
     				}
 	    			

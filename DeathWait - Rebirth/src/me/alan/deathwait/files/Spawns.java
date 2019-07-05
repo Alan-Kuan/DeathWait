@@ -74,5 +74,5 @@ public class Spawns {
 			WarningGen.Warn("在儲存spawns.yml時出了問題");
 		}
 	}
-		
+	
 }

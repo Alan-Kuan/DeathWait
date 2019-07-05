@@ -24,6 +24,7 @@ public class AnvilGUI_v1_12_R1 implements AnvilGUI{
 			super(entityHuman.inventory, entityHuman.world, new BlockPosition(0, 0, 0), entityHuman);
 		}
     
+		@SuppressWarnings("unused")
 		public boolean a(EntityHuman entityHuman){
 			return true;
 		}

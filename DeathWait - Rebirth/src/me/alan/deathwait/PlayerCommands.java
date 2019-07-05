@@ -17,15 +17,18 @@ import me.alan.deathwait.nms.NMS;
 
 
 public class PlayerCommands implements CommandExecutor{
+
+	private Core core;
 	
 	private Config config;
 	private Data data;
 	private Spawns spawns;
-	private NMS nms;
-	private ListSpawns list;
-	private ItemMaker im;
 	
-	private Core core;
+	private PlayerFunctions pfunc;
+
+	private ItemMaker im;
+
+	private NMS nms;
 	
 	public PlayerCommands(Core core){
 		
@@ -34,9 +37,12 @@ public class PlayerCommands implements CommandExecutor{
 		config = core.getConfigClass();
 		data = core.getDataClass();
 		spawns = core.getSpawnsClass();
-		nms = core.getNMSClass();
-		list = new ListSpawns(core);
+		
+		pfunc = core.getPlayerFunctionsClass();
+
 		im = new ItemMaker();
+		
+		nms = core.getNMSClass();
 		
 	}
 		
@@ -161,7 +167,7 @@ public class PlayerCommands implements CommandExecutor{
 				}
 	        	  
 			}else{
-				p.sendMessage(Global.Header + ChatColor.RED + "你沒有開啟自訂重生點功能");
+				p.sendMessage(Global.Header + ChatColor.RED + "你沒有開啟自訂復活點功能");
 			}
 
 		}else if(args[0].equals("list")){
@@ -172,12 +178,12 @@ public class PlayerCommands implements CommandExecutor{
 					p.sendMessage(Global.Header + ChatColor.RED + "用法: /dw list");
 				}else{
 					
-					list.List(p, 1);
+					pfunc.openSpawnList(p, 1);
 					
 				}
 				
 			}else{
-				p.sendMessage(Global.Header + ChatColor.RED + "你沒有開啟自訂重生點功能");
+				p.sendMessage(Global.Header + ChatColor.RED + "你沒有開啟自訂復活點功能");
 			}
 	            
 		}else if(args[0].equals("instant")){
