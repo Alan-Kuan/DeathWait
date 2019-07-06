@@ -22,12 +22,10 @@ public class AnvilGUI_v1_12_R1 implements AnvilGUI{
 		
 		public FakeAnvil(EntityHuman entityHuman){
 			super(entityHuman.inventory, entityHuman.world, new BlockPosition(0, 0, 0), entityHuman);
+
+			this.checkReachable = false;
 		}
-    
-		@SuppressWarnings("unused")
-		public boolean a(EntityHuman entityHuman){
-			return true;
-		}
+		
 	}
   
 	public void openAnvil(Player p, String name, List<String> lore){

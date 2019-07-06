@@ -1,6 +1,7 @@
 package me.alan.deathwait;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,19 +14,9 @@ import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Egg;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.ShulkerBullet;
-import org.bukkit.entity.Snowball;
-import org.bukkit.entity.SpectralArrow;
-import org.bukkit.entity.SplashPotion;
-import org.bukkit.entity.TippedArrow;
-import org.bukkit.entity.WitherSkull;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemFlag;
@@ -269,24 +260,95 @@ public class PlayerFunctions {
 		
 	}
 	
-	public Entity getShooter(Entity killer){
-		Entity shooter = killer;
-		if(((killer instanceof Arrow)) || ((killer instanceof TippedArrow)) || ((killer instanceof SpectralArrow)) || ((killer instanceof SplashPotion)) || 
-				((killer instanceof ShulkerBullet)) || ((killer instanceof WitherSkull)) || ((killer instanceof Fireball)) || ((killer instanceof Snowball)) || ((killer instanceof Egg))){
+	//等待復活時，大喊來求救
+	public void yell(Player p) {
+
+		long cooldown = config.getConfig().getLong("config.yelling cooldown");
+		
+		Date d = new Date();
+		
+		long now = d.getTime();
+		
+		long last_time = 0;
+		
+		boolean in_cooldown = true;
+		
+		try {
+			last_time = Global.getLastYellingTimeStamp(p);
+		}catch(NullPointerException ex){
+			in_cooldown = false;
+			Global.resetLastYellingTimeStamp(p);
+		}
+		
+		if(now - last_time >= cooldown*1000) {
+			in_cooldown = false;
+			Global.resetLastYellingTimeStamp(p);
+		}
+		
+		if(in_cooldown) {
 			
-			try{
-				Projectile projectile = (Projectile) killer;
-				shooter = (Entity)(projectile.getShooter());
-			}catch(Exception e){
-				return null;
-			}
+			p.sendMessage(Global.Header + ChatColor.RED + "求救冷卻中，請於" + (cooldown - (now - last_time)/1000) + "秒後再求救");
+			
+			return;
 			
 		}
 		
-		return shooter;
+		double range = 200.0;
+
+		String msg = "§6{p} §r在 §a{loc} §r向你§c求救!";
+		
+		
+		if(config.getConfig().isSet("config.yelling range"))
+			range = config.getConfig().getDouble("config.yelling range");
+		
+		if(config.getConfig().isSet("config.yelling message")) {
+			
+			List<String> msg_list = config.getConfig().getStringList("config.yelling message");
+			
+			int idx = (int) (Math.random()*msg_list.size());
+			
+			msg = msg_list.get(idx);
+			
+		}
+		
+		int x = (int) p.getLocation().getX();
+		int y = (int) p.getLocation().getY();
+		int z = (int) p.getLocation().getZ();
+		
+		String loc = "(" + x + ", " + y + ", " + z + ")";
+		
+		msg = msg.replace("{p}", p.getName()).replace("{loc}", loc);
+		
+		boolean found = false;
+
+		
+		p.playSound(p.getLocation(), Sound.ENTITY_GHAST_SCREAM, 1, 1);
+				
+		for(Entity ent : p.getNearbyEntities(range, range, range)) {
+			
+			if(ent instanceof Player) {
+				
+				Player hearer = (Player) ent;
+				
+				if(Global.isGhost(hearer)) continue;
+
+				found = true;
+				
+				hearer.sendMessage(msg);
+				
+				nms.sendTitle(hearer, "§4HELP!", 0, 20, 5);
+				
+				hearer.playSound(hearer.getLocation(), Sound.ENTITY_GHAST_SCREAM, 1, 1);
+				
+			}
+			
+		}
+
+		if(!found)
+			p.sendMessage(Global.Header + ChatColor.YELLOW + "儘管你如何奮力地大吼，遺憾的是周圍" + range + "格內沒有人聽見的的呼喊");
+		
 	}
 	
-
 	@SuppressWarnings("deprecation")
 	public double getMaxHealth(Player p){
 		
@@ -318,28 +380,35 @@ public class PlayerFunctions {
 	@SuppressWarnings("deprecation")
 	public void setNameTag(Player p){
 
-	    ArmorStand nametag = (ArmorStand) p.getWorld().spawnEntity(p.getLocation().add(0, 1, 0), EntityType.ARMOR_STAND);
-	    
-	    nametag.setCustomName(p.getName());
-	    nametag.setCustomNameVisible(true);
-	    nametag.setVisible(false);
-	    nametag.setSmall(true);
-	    nametag.setMarker(true);
-	    nametag.addScoreboardTag("dw_nametag");
-	    
-		if(Global.version.equals("v1_10_R1")){
-			p.setPassenger(nametag);
-		}else{
-			p.addPassenger(nametag);
-		}
-		
+		if(!Global.isInTargetEntity(p)) {
+			
+			ArmorStand nametag = (ArmorStand) p.getWorld().spawnEntity(p.getLocation().add(0, 1, 0), EntityType.ARMOR_STAND);
+		    
+		    nametag.setCustomName(p.getName());
+		    nametag.setCustomNameVisible(true);
+		    nametag.setVisible(false);
+		    nametag.setSmall(true);
+		    nametag.setMarker(true);
+		    nametag.addScoreboardTag("dw_nametag");
+		    
+			if(Global.version.equals("v1_10_R1")){
+				p.setPassenger(nametag);
+			}else{
+				p.addPassenger(nametag);
+			}
+			
+	    }
+	    		
 	}
 	
 	public void removeNameTag(Player p){
 
 		if(!Global.isInTargetEntity(p)) {
 			
-			for(Entity ent : p.getNearbyEntities(0.5, 1.5, 0.5)) {
+			for(Entity ent : p.getNearbyEntities(0.5, 1, 0.5)) {
+				
+				if(ent.getCustomName() == null || ent.getScoreboardTags().isEmpty())
+					continue;
 				
 				if(ent.getCustomName().equals(p.getName()) && ent.getScoreboardTags().contains("dw_nametag")) {
 					ent.remove();
@@ -361,9 +430,9 @@ public class PlayerFunctions {
 	    
 	    //計算頁數
 	    int pages = 1;
+    	int spawnpoints = 0;
 	    if(spawns.getConfig().isSet("spawns")){
 	    	
-	    	int spawnpoints = 0;
 	    	for(String id : spawns.getConfig().getConfigurationSection("spawns").getKeys(false)){
 
 	    		//如果玩家有dw.gui.own必須只算有權限的復活點數量
@@ -390,32 +459,32 @@ public class PlayerFunctions {
 	    		}
 	    	}
 	    	
-	    	//如果沒有任何復活點或沒有擁有任何復活點權限
-	    	if(spawnpoints == 0 && !enable_default_respawn_button && Global.isGhost(p)) {
-	    		
-	    	    removeNameTag(p);
-	    	    
-	    	    Global.cancelTimeLimitTask(p);
-	    	    
-	    	    final Location loc = getNormalSpawnPoint(p);
-	    	    
-	    	    new BukkitRunnable() {
-	    	    	
-	    	    	@Override
-	    	    	public void run() {
-	    	    	    p.teleport(loc);
-	    	    		
-	    	    	    TurnBack(p);
-	    	    	}
-	    	    	
-	    	    }.runTaskLater(core, 2);
-	    	    
-	    	    return;
-	    	    
-	    	}
-	    	
 	    }
-	    
+
+    	//如果沒有任何復活點或沒有擁有任何復活點權限
+    	if(spawnpoints == 0 && !enable_default_respawn_button && Global.isGhost(p)) {
+    		
+    	    removeNameTag(p);
+    	    
+    	    Global.cancelTimeLimitTask(p);
+    	    
+    	    final Location loc = getNormalSpawnPoint(p);
+    	    
+    	    new BukkitRunnable() {
+    	    	
+    	    	@Override
+    	    	public void run() {
+    	    	    p.teleport(loc);
+    	    		
+    	    	    TurnBack(p);
+    	    	}
+    	    	
+    	    }.runTaskLater(core, 2);
+    	    
+    	    return;
+    	    
+    	}
+    	
 	    if(page_num > 1){
 	    	ItemStack previous = im.createItem(Material.SKULL_ITEM, 3, ChatColor.BLUE + "上一頁", null, false);
 	    	SkullMeta previous_meta = (SkullMeta) previous.getItemMeta();
@@ -450,6 +519,7 @@ public class PlayerFunctions {
 	    }
 	    
 	    if(enable_default_respawn_button){
+	    	
 	    	List<String> lore = new ArrayList<String>();
 	    	lore.add("&b優先順序:");
 	    	
@@ -460,9 +530,22 @@ public class PlayerFunctions {
 	    	lore.add("&b睡床點 →");
 	    	lore.add("&b世界重生點");
 	    	
-	    	ItemStack normal = im.createItem(Material.EMERALD, 0, ChatColor.DARK_GREEN + "自然重生點", lore, true);
+	    	ItemStack respawn_button = im.createItem(Material.EMERALD, 0, ChatColor.DARK_GREEN + "自然重生點", lore, true);
 	      
-	    	gui.setItem(27, normal);
+	    	gui.setItem(27, respawn_button);
+	    }
+	    
+	    if(Global.isGhost(p) && p.hasPermission("dw.yell")) {
+	    	
+	    	List<String> lore = new ArrayList<String>();
+	    	
+	    	double range = config.getConfig().getDouble("config.yelling range");
+	    	
+	    	lore.add(ChatColor.YELLOW + "向周圍" + range + "格的玩家求救");
+	    	
+	    	ItemStack yelling_button = im.createItem(Material.JACK_O_LANTERN, 0, ChatColor.BOLD + "" + ChatColor.DARK_RED + "求救", lore, false);
+	    	
+	    	gui.setItem(29, yelling_button);
 	    }
 	    
 	    if(spawns.getConfig().isSet("spawns")){
@@ -586,10 +669,24 @@ public class PlayerFunctions {
     					p.playSound(loc, Sound.BLOCK_NOTE_HARP, 1, 1);
     					
     				}else if(temp == 0){
+    					
     					cancel();
+    					
 	    				Global.removeNoChoose(p);
-	    				p.teleport(getNormalSpawnPoint(p));
-	    				TurnBack(p);
+	    				
+	    				removeNameTag(p);
+	    				
+	    				new BukkitRunnable() {
+	    					
+	    					@Override
+	    					public void run() {
+	    	    				p.teleport(getNormalSpawnPoint(p));
+	    	    				
+	    	    				TurnBack(p);
+	    					}
+	    					
+	    				}.runTaskLater(core, 2);
+	    				
     				}
 	    			
 	    			temp--;

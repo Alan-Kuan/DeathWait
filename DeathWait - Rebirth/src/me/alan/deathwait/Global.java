@@ -3,12 +3,29 @@ package me.alan.deathwait;
 import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Egg;
+import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.Fireball;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.ShulkerBullet;
+import org.bukkit.entity.Snowball;
+import org.bukkit.entity.SpectralArrow;
+import org.bukkit.entity.SplashPotion;
+import org.bukkit.entity.TNTPrimed;
+import org.bukkit.entity.TippedArrow;
+import org.bukkit.entity.WitherSkull;
+import org.bukkit.entity.minecart.ExplosiveMinecart;
 import org.bukkit.scheduler.BukkitTask;
 
 public class Global {
@@ -29,6 +46,8 @@ public class Global {
 	private static List<Player> turnpage = new ArrayList<Player>();
 	
 	private static List<Player> ghost = new ArrayList<Player>();
+	
+	private static HashMap<Player, Long> last_yelling_time = new HashMap<Player, Long>();
 	
 	private static HashMap<Player, BukkitTask> countdown_task = new HashMap<Player, BukkitTask>();
 	
@@ -92,6 +111,28 @@ public class Global {
 		ghost.remove(p);
 	}
 	
+	public static void resetLastYellingTimeStamp(Player p){
+		Date d = new Date();
+		
+		long now = d.getTime();
+		
+		if(last_yelling_time.containsKey(p)) {
+			last_yelling_time.replace(p, now);
+		}else {
+			last_yelling_time.put(p, now);	
+		}
+	}
+	public static Long getLastYellingTimeStamp(Player p) {
+		if(last_yelling_time.containsKey(p)) {
+			return last_yelling_time.get(p);
+		}else {
+			return null;
+		}
+	}
+	public static void removeLastYellingTimeStamp(Player p) {
+		last_yelling_time.remove(p);
+	}
+	
 	public static boolean hasCountdownTask(Player p) {
 		return countdown_task.containsKey(p);
 	}
@@ -146,6 +187,38 @@ public class Global {
 	}
 	public static void removeTargetEntity(Entity target, Player p){
 		target_entity.remove(target, p);
+	}
+
+	
+	public static Entity getKiller(Entity damager){
+		
+		//如果傷害玩家的實體是投擲物
+		if(((damager instanceof Arrow)) || ((damager instanceof TippedArrow)) || ((damager instanceof SpectralArrow)) || ((damager instanceof SplashPotion)) || ((damager instanceof Firework)) || 
+				((damager instanceof ShulkerBullet)) || ((damager instanceof WitherSkull)) || ((damager instanceof Fireball)) || ((damager instanceof Snowball)) || ((damager instanceof Egg))){
+			
+			try{
+				
+				Projectile pj = (Projectile) damager;
+				
+				if(pj.getShooter() instanceof Entity) {
+					return (Entity) pj.getShooter();
+				}else {
+					return null;
+				}
+				
+			}catch(Exception e){
+				return null;
+			}
+			
+		}
+		
+		return damager;
+	}
+	
+	public static boolean isExplosiveEntity(Entity ent) {
+		
+		return (ent instanceof Creeper) && (ent instanceof EnderCrystal) && (ent instanceof FallingBlock) && (ent instanceof TNTPrimed) && (ent instanceof ExplosiveMinecart);
+				
 	}
 	
 }

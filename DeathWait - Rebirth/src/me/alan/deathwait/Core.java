@@ -24,16 +24,11 @@ import me.alan.deathwait.nms.v1_12_R1;
 	備註: 如果擔心Essentials的重生系統影響到，可在Essentials將respawn-listener-priority:設為lowest
 	      
 	備忘錄:  ess自殺相容性(目前知1.11.2沒問題)
-			有dw.yell可求救
-			從target entity出來後，名條在倒數結束時有時不會消失
-			在target entity裡，登出後再登入，名條在倒數結束時不會消失
-			1.12.2的AnvilGUI不能用
 			玩家斷線可做處理
 			選目錄玩家之重登處理
 			伺服重讀可替等待的玩家做處理
 			測試兩個玩家死在同一個怪物下
 			避免滑行、Shift放置道具於GUI
-			/kill 處理
 
 *************************/
 

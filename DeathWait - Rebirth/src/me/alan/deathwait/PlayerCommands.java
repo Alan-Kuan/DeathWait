@@ -89,7 +89,7 @@ public class PlayerCommands implements CommandExecutor{
 			p.sendMessage(ChatColor.DARK_GREEN + "版本: " + core.getDescription().getVersion());
 			nms.sendCommand(p, "§b/dw reload - 重讀本插件 ", "/dw reload");
 			nms.sendCommand(p, "§b/dw list - 查看所有復活點 ", "/dw list");
-			nms.sendExample(p);
+			nms.sendExample(p, "§b/dw set <復活點名稱> - 新增復活點", "/dw set &a超神復活點");
 			nms.sendCommand(p, "§b/dw instant [<數量>] - 獲得免等道具 ", "/dw instant");
 			nms.sendCommand(p, "§b/dw assistant [<數量>] - 獲得原地復活道具 ", "/dw assistant");
 			nms.sendCommand(p, "§b/dw check - 查詢剩餘幾次免等額度 ", "/dw check");

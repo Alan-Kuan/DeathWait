@@ -9,20 +9,16 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.entity.Creeper;
-import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
-import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.TNTPrimed;
-import org.bukkit.entity.minecart.ExplosiveMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
@@ -33,6 +29,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
@@ -129,7 +126,7 @@ public class PlayerListener implements Listener{
 	    Global.addGhost(p);
 	    p.setHealth(pfunc.getMaxHealth(p));
 	    p.setVelocity(new Vector(0, 0, 0));
-	    
+	    	    
 	    //踢下騎在該玩家身上的生物
 	    pfunc.kickPassenger(p);
 	    
@@ -137,7 +134,7 @@ public class PlayerListener implements Listener{
 	    p.teleport(p.getLocation());
 	    
 	    //若掉進虛空
-	    if((p.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.VOID)) && (p.getLocation().getY() < 0.0)){
+	    if(e.getCause().equals(DamageCause.VOID) && (p.getLocation().getY() < 0.0)){
 	    	World w = p.getWorld();
 	    	double x = p.getLocation().getX();
 	    	double z = p.getLocation().getZ();
@@ -195,7 +192,7 @@ public class PlayerListener implements Listener{
 	    if(reset_food_level){
 	    	p.setFoodLevel(20);
 	    }
-
+	    
 	    if(p.hasPermission("dw.bypass")){
 	    	
 	    	have_to_wait = false;
@@ -221,23 +218,19 @@ public class PlayerListener implements Listener{
 	    if(enable_killer_view && (e instanceof EntityDamageByEntityEvent)){
 	    	
 	    	EntityDamageByEntityEvent edbee = (EntityDamageByEntityEvent) e;
-	    	Entity killer = edbee.getDamager();
-	    	Entity shooter = pfunc.getShooter(killer);
 	    	
-	    	if((shooter != null) && (!killer.equals(shooter)) && (!p.equals(shooter))){
-	    		nms.setSpectate(p, shooter);
-	    		Global.addTargetEntity(shooter, p);
-	    	}else if((killer.equals(shooter)) && (!(killer instanceof Creeper)) && (!(killer instanceof EnderCrystal)) && (!(killer instanceof FallingBlock)) && (!(killer instanceof TNTPrimed)) && (!(killer instanceof ExplosiveMinecart))){
+	    	Entity killer = Global.getKiller(edbee.getDamager());
+	    	
+	    	//如果殺手存在 且 玩家不是殺手 且 殺手不是爆炸實體或落沙
+	    	if(killer != null && !p.equals(killer) && !Global.isExplosiveEntity(killer)) {
 	    		nms.setSpectate(p, killer);
-	    		Global.addTargetEntity(shooter, p);
+	    		Global.addTargetEntity(killer, p);
 	    	}
-	    	
+	    		    	
 	    }
 	    
 	    //顯示名條
-	    if(!Global.isInTargetEntity(p)) {
-	    	pfunc.setNameTag(p);
-	    }
+	    pfunc.setNameTag(p);
 	    
 	    //需要等待
 	    if(have_to_wait){
@@ -355,7 +348,7 @@ public class PlayerListener implements Listener{
 					//顯示名條		    
 				    pfunc.setNameTag(p);
 
-		    		if(allow_moving){
+	    		if(allow_moving){
 						p.setFlySpeed(0.1f);
 					}else{
 						p.setFlySpeed(0);
@@ -398,6 +391,18 @@ public class PlayerListener implements Listener{
 			
 			Global.addCountdownTask(p, countdown_task);
 			
+		}
+		
+	}
+	
+	//當玩家使用蹲下來求救
+	@EventHandler
+	public void onShiftYelling(PlayerToggleSneakEvent e) {
+		
+		Player p = e.getPlayer();
+		
+		if(p.isSneaking() && Global.isGhost(p) && p.hasPermission("dw.yell")) {
+			pfunc.yell(p);
 		}
 		
 	}
@@ -479,7 +484,6 @@ public class PlayerListener implements Listener{
 	    InventoryAction action = e.getAction();
 	    int slot = e.getSlot();
 	    
-	    //防止有人把道具放進來
 	    if(item.getType() == Material.AIR){
 	    	return;
 	    }
@@ -499,6 +503,7 @@ public class PlayerListener implements Listener{
 		    
 	    }
 	    
+	    //防止把道具和不能替換的圖示交換
 	    if(slot > 26) {
 
 		    if(action == InventoryAction.SWAP_WITH_CURSOR) return;
@@ -530,6 +535,11 @@ public class PlayerListener implements Listener{
 	    		
 	    	}.runTaskLater(core, 2);
 	    	
+	    }
+	    
+	    //求救
+	    if(click.equals(ClickType.LEFT) && slot == 29 && name.equals(ChatColor.BOLD + "" + ChatColor.DARK_RED + "求救")) {
+	    	pfunc.yell(p);
 	    }
 	    
 	    //上一頁
@@ -979,9 +989,9 @@ public class PlayerListener implements Listener{
 	    					entp.teleport(entp.getLocation().add(0.0, 0.2, 0.0));
 	    					pfunc.TurnBack(entp);
 	              
-	    					nms.sendTitle(entp, "", 0, 0, 0);
+	    					nms.sendTitle(entp, "", 0, 40, 0);
 	    					nms.sendSubTitle(entp, 
-	    							ChatColor.DARK_GREEN + p.getName() + "用" + ChatColor.RESET + assistant_respawn_item.getItemMeta().getDisplayName() + ChatColor.DARK_GREEN + "讓你在這裡復活",
+	    							ChatColor.DARK_GREEN + p.getName() + "使用" + ChatColor.RESET + assistant_respawn_item.getItemMeta().getDisplayName() + ChatColor.DARK_GREEN + "讓你原地復活",
 	    							0, 40, 10);
 	    					entp.getWorld().spawnEntity(entp.getLocation(), EntityType.FIREWORK);
 	    					if(item.getAmount() > 1){

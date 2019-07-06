@@ -6,16 +6,16 @@ import org.bukkit.entity.Player;
 
 public abstract interface NMS{
 	
-	public abstract void sendTitle(Player paramPlayer, String paramString, int fade_in, int duration, int fade_out);
+	public abstract void sendTitle(Player p, String text, int fade_in, int duration, int fade_out);
   
-	public abstract void sendSubTitle(Player paramPlayer, String paramString, int fade_in, int duration, int fade_out);
+	public abstract void sendSubTitle(Player p, String text, int fade_in, int duration, int fade_out);
   
-	public abstract void sendCommand(Player paramPlayer, String paramString1, String paramString2);
+	public abstract void sendCommand(Player p, String text, String command);
   
-	public abstract void sendExample(Player paramPlayer);
+	public abstract void sendExample(Player p, String text, String command);
   
-	public abstract void sendLocation(Player paramPlayer, String paramString, Location paramLocation);
+	public abstract void sendLocation(Player p, String name, Location loc);
   
-	public abstract void setSpectate(Player paramPlayer, Entity paramEntity);
+	public abstract void setSpectate(Player p, Entity ent);
 
 }

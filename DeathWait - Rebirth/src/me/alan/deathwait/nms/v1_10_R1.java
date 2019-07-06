@@ -44,9 +44,9 @@ public class v1_10_R1 implements NMS{
 		c.sendPacket(packet);
 	}
   
-	public void sendExample(Player p){
+	public void sendExample(Player p, String text, String command){
 		PlayerConnection c = ((CraftPlayer)p).getHandle().playerConnection;
-		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"§b/dw set <復活點名稱> - 新增復活點 \",\"extra\":[{\"text\":\"[\",\"bold\":\"true\"},{\"text\":\"範例\",\"bold\":\"true\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/dw set &a超神復活點\"}},{\"text\":\"]\",\"bold\":\"true\"}]}");
+		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"" + text + "\",\"extra\":[{\"text\":\"[\",\"bold\":\"true\"},{\"text\":\"範例\",\"bold\":\"true\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"" + command + "\"}},{\"text\":\"]\",\"bold\":\"true\"}]}");
 		PacketPlayOutChat packet = new PacketPlayOutChat(json);
 		c.sendPacket(packet);
 	}
