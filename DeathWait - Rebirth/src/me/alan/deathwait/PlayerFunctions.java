@@ -177,8 +177,9 @@ public class PlayerFunctions {
 		
 		if(Global.isInTargetEntity(p)){
 
-			nms.setSpectate(p, p);
-
+			//nms.setSpectate(p, p);
+			p.setSpectatorTarget(p);
+			
 			for(Entity target: Global.getTargetEntities()){
 
 				if(Global.getPlayerInTargetEntity(target).equals(p)){
@@ -262,7 +263,23 @@ public class PlayerFunctions {
 	
 	//等待復活時，大喊來求救
 	public void yell(Player p) {
+		
+		//防止舊版沒資料
+		if(!config.getConfig().isSet("config.yelling cooldown"))
+			config.set("config.yelling cooldown", 10);
+		
+		if(!config.getConfig().isSet("config.yelling range"))
+			config.set("config.yelling range", 200.0);
 
+		if(!config.getConfig().isSet("config.yelling message")) {
+			List<String> msg_list = new ArrayList<String>();
+			
+			msg_list.add("§6{p} §r在 §a{loc} §r向你§c求救!");
+			
+			config.set("config.yelling message", msg_list);
+		}
+		
+		
 		long cooldown = config.getConfig().getLong("config.yelling cooldown");
 		
 		Date d = new Date();
@@ -293,23 +310,13 @@ public class PlayerFunctions {
 			
 		}
 		
-		double range = 200.0;
+		double range = config.getConfig().getDouble("config.yelling range");
 
-		String msg = "§6{p} §r在 §a{loc} §r向你§c求救!";
+		List<String> msg_list = config.getConfig().getStringList("config.yelling message");
 		
+		int idx = (int) (Math.random()*msg_list.size());
 		
-		if(config.getConfig().isSet("config.yelling range"))
-			range = config.getConfig().getDouble("config.yelling range");
-		
-		if(config.getConfig().isSet("config.yelling message")) {
-			
-			List<String> msg_list = config.getConfig().getStringList("config.yelling message");
-			
-			int idx = (int) (Math.random()*msg_list.size());
-			
-			msg = msg_list.get(idx);
-			
-		}
+		String msg = msg_list.get(idx);
 		
 		int x = (int) p.getLocation().getX();
 		int y = (int) p.getLocation().getY();
@@ -490,7 +497,7 @@ public class PlayerFunctions {
 	    	SkullMeta previous_meta = (SkullMeta) previous.getItemMeta();
 	    	
 	    	if(Global.version.equals("v1_12_R1")) {
-	    		previous_meta.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString("a68f0b648d144000a95f4b9ba14f8df9")));
+	    		previous_meta.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString("a68f0b64-8d14-4000-a95f-4b9ba14f8df9")));
 	    	}else {
 		    	previous_meta.setOwner("MHF_ArrowLeft");
 	    	}
@@ -509,7 +516,7 @@ public class PlayerFunctions {
 	    	SkullMeta next_meta = (SkullMeta)next.getItemMeta();
 	    	
 	    	if(Global.version.equals("v1_12_R1")) {
-	    		next_meta.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString("50c8510b5ea04d60be9a7d542d6cd156")));
+	    		next_meta.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString("50c8510b-5ea0-4d60-be9a-7d542d6cd156")));
 	    	}else {
 	    		next_meta.setOwner("MHF_ArrowRight");
 	    	}
@@ -565,6 +572,11 @@ public class PlayerFunctions {
 	    			if(!p.hasPermission("dw.respawn." + id)){
 	    				continue;
 	    			}
+	    		}
+	    		
+	    		if(i < start) {
+	    			i++;
+	    			continue;
 	    		}
 	    		
 	    		Location loc = (Location) spawns.getConfig().get("spawns." + id + ".location");

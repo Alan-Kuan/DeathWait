@@ -39,12 +39,6 @@ public class Spawns {
 		return spawns;
 	}
 	
-	public void set(String path, Object object){
-		spawns.set(path, object);
-		
-		save();
-	}
-	
 	public void load(){
 		
 		file = new File(core.getDataFolder(), "spawns.yml");
@@ -73,6 +67,12 @@ public class Spawns {
 			e.printStackTrace();
 			WarningGen.Warn("在儲存spawns.yml時出了問題");
 		}
+	}
+
+	public void set(String path, Object obj){
+		spawns.set(path, obj);
+		
+		save();
 	}
 	
 }

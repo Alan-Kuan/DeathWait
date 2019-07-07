@@ -65,4 +65,10 @@ public class Config {
 		}
 	}
 	
+	public void set(String path, Object obj) {
+		config.set(path, obj);
+		
+		save();
+	}
+	
 }

@@ -27,8 +27,6 @@ import me.alan.deathwait.nms.v1_12_R1;
 			玩家斷線可做處理
 			選目錄玩家之重登處理
 			伺服重讀可替等待的玩家做處理
-			測試兩個玩家死在同一個怪物下
-			避免滑行、Shift放置道具於GUI
 
 *************************/
 
@@ -80,6 +78,7 @@ public class Core extends JavaPlugin {
 		getCommand("dw").setExecutor(new PlayerCommands(this));
 		getCommand("dw").setTabCompleter(new TabCompleteCommand());
 		getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+		getServer().getPluginManager().registerEvents(new MenuListener(this), this);
 
 		//確認是否有裝Essentials
 		if(Bukkit.getPluginManager().isPluginEnabled("Essentials")){
