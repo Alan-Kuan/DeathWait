@@ -3,7 +3,6 @@ package me.alan.deathwait;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -496,11 +495,8 @@ public class PlayerFunctions {
 	    	ItemStack previous = im.createItem(Material.SKULL_ITEM, 3, ChatColor.BLUE + "上一頁", null, false);
 	    	SkullMeta previous_meta = (SkullMeta) previous.getItemMeta();
 	    	
-	    	if(Global.version.equals("v1_12_R1")) {
-	    		previous_meta.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString("a68f0b64-8d14-4000-a95f-4b9ba14f8df9")));
-	    	}else {
-		    	previous_meta.setOwner("MHF_ArrowLeft");
-	    	}
+	    	//未來要能改成用UUID
+	    	previous_meta.setOwner("MHF_ArrowLeft");
 	    	
 	    	previous.setItemMeta(previous_meta);
 	    	gui.setItem(30, previous);
@@ -515,11 +511,8 @@ public class PlayerFunctions {
 	    	ItemStack next = im.createItem(Material.SKULL_ITEM, 3, ChatColor.BLUE + "下一頁", null, false);
 	    	SkullMeta next_meta = (SkullMeta)next.getItemMeta();
 	    	
-	    	if(Global.version.equals("v1_12_R1")) {
-	    		next_meta.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString("50c8510b-5ea0-4d60-be9a-7d542d6cd156")));
-	    	}else {
-	    		next_meta.setOwner("MHF_ArrowRight");
-	    	}
+	    	//未來要能改成用UUID
+	    	next_meta.setOwner("MHF_ArrowRight");
 	    	
 	    	next.setItemMeta(next_meta);
 	    	gui.setItem(32, next);

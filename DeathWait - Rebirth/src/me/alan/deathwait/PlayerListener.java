@@ -4,7 +4,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -14,9 +13,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -79,23 +78,13 @@ public class PlayerListener implements Listener{
 	}
 	
 	@EventHandler
-	public void onDeath(EntityDamageEvent e){
-		
-		if(!(e.getEntity() instanceof Player)) {
-			return;
-		}
+	public void onDeath(PlayerDeathEvent e){
 		
 		Player p = (Player) e.getEntity();
 		
-		//如果玩家最後一擊使玩家死亡
-		if(p.getHealth() - e.getFinalDamage() <= 0.0) {
-			e.setCancelled(true);
-		}else {
-			return;
-		}
-		
-		p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_HURT, 1, 1);
-		
+	    p.setHealth(pfunc.getMaxHealth(p));
+	    p.setVelocity(new Vector(0, 0, 0));
+	    
 		//確認玩家是否為target entity
 		targetEntityCheck(p);
 		
@@ -109,8 +98,6 @@ public class PlayerListener implements Listener{
 	    
 	    Global.setGameMode(p, p.getGameMode());
 	    Global.addGhost(p);
-	    p.setHealth(pfunc.getMaxHealth(p));
-	    p.setVelocity(new Vector(0, 0, 0));
 	    	    
 	    //踢下騎在該玩家身上的生物
 	    pfunc.kickPassenger(p);
@@ -119,7 +106,7 @@ public class PlayerListener implements Listener{
 	    p.teleport(p.getLocation());
 	    
 	    //若掉進虛空
-	    if(e.getCause().equals(DamageCause.VOID) && (p.getLocation().getY() < 0.0)){
+	    if(/*e.getCause()*/p.getLastDamageCause().equals(DamageCause.VOID) && (p.getLocation().getY() < 0.0)){
 	    	World w = p.getWorld();
 	    	double x = p.getLocation().getX();
 	    	double z = p.getLocation().getZ();
@@ -200,9 +187,9 @@ public class PlayerListener implements Listener{
 	    
 	    p.setGameMode(GameMode.SPECTATOR);
 	    
-	    if(enable_killer_view && (e instanceof EntityDamageByEntityEvent)){
+	    if(enable_killer_view && (p.getLastDamageCause() instanceof EntityDamageByEntityEvent)){
 	    	
-	    	EntityDamageByEntityEvent edbee = (EntityDamageByEntityEvent) e;
+	    	EntityDamageByEntityEvent edbee = (EntityDamageByEntityEvent) p.getLastDamageCause();
 	    	
 	    	Entity killer = Global.getKiller(edbee.getDamager());
 	    	
