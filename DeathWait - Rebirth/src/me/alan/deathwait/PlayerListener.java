@@ -1,5 +1,5 @@
 package me.alan.deathwait;
-
+//
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
