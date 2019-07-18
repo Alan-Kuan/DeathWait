@@ -21,13 +21,11 @@ import me.alan.deathwait.nms.v1_12_R1;
 
 /*************************
 
-	備註: 如果擔心Essentials的重生系統影響到，可在Essentials將respawn-listener-priority:設為lowest
+	備註: 如果擔心Essentials的重生系統影響到，可在Essentials將respawn-listener-priority:設為lowest或none
 	      
-	備忘錄:  ess自殺相容性(目前知1.11.2沒問題)
-			玩家斷線可做處理
-			選目錄玩家之重登處理
-			伺服重讀可替等待的玩家做處理
-			不死圖騰處理(原版 /kill 無作用)
+	待完成:  玩家斷線可做處理
+		   選目錄玩家之重登處理
+		   伺服重讀可替等待的玩家做處理
 
 *************************/
 

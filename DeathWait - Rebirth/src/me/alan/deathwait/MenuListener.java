@@ -65,7 +65,7 @@ public class MenuListener implements Listener{
 	    
 	    if(!Global.hasTurnedPage(p)){
 	    	
-	    	if(gui.getTitle().equals(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "所有復活點") && Global.didNotChoose(p)){
+	    	if(gui.getTitle().equals(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "復活點目錄") && Global.didNotChoose(p)){
 	    	    
 	    		try{
 	    			
@@ -103,7 +103,7 @@ public class MenuListener implements Listener{
 		
 		Set<Integer> rawslots = e.getRawSlots();
 				
-		if(gui.getTitle().equals(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "所有復活點")) {
+		if(gui.getTitle().equals(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "復活點目錄")) {
 			
 			for(Integer ele : rawslots) {
 				
@@ -124,7 +124,7 @@ public class MenuListener implements Listener{
 				
 	    Inventory gui = e.getInventory();
 	    
-	    if(!gui.getTitle().equals(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "所有復活點")) {
+	    if(!gui.getTitle().equals(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "復活點目錄")) {
 	    	return;
 	    }
 	    

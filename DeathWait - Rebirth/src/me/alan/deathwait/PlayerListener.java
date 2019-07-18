@@ -22,7 +22,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -82,8 +81,24 @@ public class PlayerListener implements Listener{
 		
 		Player p = (Player) e.getEntity();
 		
+	    PlayerInventory inv = p.getInventory();
+
+    	DamageCause cause = p.getLastDamageCause().getCause();
+    	
+	    //確認玩家是否手持不死圖騰
+	    if(inv.getItemInMainHand().getType().equals(Material.TOTEM) || inv.getItemInOffHand().getType().equals(Material.TOTEM)) {
+	    	
+	    	//不死圖騰無法挽回原版/kill和掉入虛空的情況，同樣地，Essentials的/kill、/suicide等亦無法挽回
+	    	if(!(cause.equals(DamageCause.VOID) || cause.equals(DamageCause.CUSTOM) || cause.equals(DamageCause.SUICIDE)))
+	    		return;
+	    	
+	    }
+
 	    p.setHealth(pfunc.getMaxHealth(p));
 	    p.setVelocity(new Vector(0, 0, 0));
+
+	    //如果玩家已經是幽靈，就不要做進一步的處理
+	    if(Global.isGhost(p)) return;
 	    
 		//確認玩家是否為target entity
 		targetEntityCheck(p);
@@ -106,7 +121,7 @@ public class PlayerListener implements Listener{
 	    p.teleport(p.getLocation());
 	    
 	    //若掉進虛空
-	    if(/*e.getCause()*/p.getLastDamageCause().equals(DamageCause.VOID) && (p.getLocation().getY() < 0.0)){
+	    if(cause.equals(DamageCause.VOID) && (p.getLocation().getY() < 0.0)){
 	    	World w = p.getWorld();
 	    	double x = p.getLocation().getX();
 	    	double z = p.getLocation().getZ();
@@ -138,7 +153,6 @@ public class PlayerListener implements Listener{
 	    }
 
 	    //依照Gamerule來決定要不要掉落道具
-	    Inventory inv = p.getInventory();
 	    if(keepinv.equals("false")){
 	    	ItemStack[] items = inv.getContents();
 	    	int length = items.length;

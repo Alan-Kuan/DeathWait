@@ -6,11 +6,14 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.block.banner.Pattern;
+import org.bukkit.block.banner.PatternType;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -20,8 +23,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -428,10 +431,9 @@ public class PlayerFunctions {
 	}
 	
 	//開啟復活點目錄
-	@SuppressWarnings("deprecation")
 	public void openSpawnList(final Player p, int page_num){
 		
-	    Inventory gui = Bukkit.createInventory(null, 36, ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "所有復活點");
+	    Inventory gui = Bukkit.createInventory(null, 36, ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "復活點目錄");
 	    boolean enable_default_respawn_button = config.getConfig().getBoolean("config.display button of default respawn point");
 	    
 	    //計算頁數
@@ -492,11 +494,19 @@ public class PlayerFunctions {
     	}
     	
 	    if(page_num > 1){
-	    	ItemStack previous = im.createItem(Material.SKULL_ITEM, 3, ChatColor.BLUE + "上一頁", null, false);
-	    	SkullMeta previous_meta = (SkullMeta) previous.getItemMeta();
+	    	ItemStack previous = im.createItem(Material.BANNER, 7, ChatColor.BLUE + "上一頁", null, false);
+	    	BannerMeta previous_meta = (BannerMeta) previous.getItemMeta();
+
+	    	List<Pattern> pattern = new ArrayList<Pattern>();
 	    	
-	    	//未來要能改成用UUID
-	    	previous_meta.setOwner("MHF_ArrowLeft");
+	    	pattern.add(new Pattern(DyeColor.BLUE, PatternType.STRIPE_LEFT));
+	    	pattern.add(new Pattern(DyeColor.BLUE, PatternType.STRIPE_MIDDLE));
+	    	pattern.add(new Pattern(DyeColor.SILVER, PatternType.STRIPE_TOP));
+	    	pattern.add(new Pattern(DyeColor.SILVER, PatternType.STRIPE_BOTTOM));
+	    	pattern.add(new Pattern(DyeColor.SILVER, PatternType.CURLY_BORDER));
+	    	
+	    	previous_meta.setPatterns(pattern);
+	    	previous_meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
 	    	
 	    	previous.setItemMeta(previous_meta);
 	    	gui.setItem(30, previous);
@@ -508,11 +518,19 @@ public class PlayerFunctions {
 	    gui.setItem(31, im.createItem(Material.PAPER, 0, ChatColor.BLUE + "-第" + page_num + "頁-", total, false));
 	    
 	    if(page_num < pages){
-	    	ItemStack next = im.createItem(Material.SKULL_ITEM, 3, ChatColor.BLUE + "下一頁", null, false);
-	    	SkullMeta next_meta = (SkullMeta)next.getItemMeta();
+	    	ItemStack next = im.createItem(Material.BANNER, 7, ChatColor.BLUE + "下一頁", null, false);
+	    	BannerMeta next_meta = (BannerMeta) next.getItemMeta();
+
+	    	List<Pattern> pattern = new ArrayList<Pattern>();
 	    	
-	    	//未來要能改成用UUID
-	    	next_meta.setOwner("MHF_ArrowRight");
+	    	pattern.add(new Pattern(DyeColor.BLUE, PatternType.STRIPE_RIGHT));
+	    	pattern.add(new Pattern(DyeColor.BLUE, PatternType.STRIPE_MIDDLE));
+	    	pattern.add(new Pattern(DyeColor.SILVER, PatternType.STRIPE_TOP));
+	    	pattern.add(new Pattern(DyeColor.SILVER, PatternType.STRIPE_BOTTOM));
+	    	pattern.add(new Pattern(DyeColor.SILVER, PatternType.CURLY_BORDER));
+	    	
+	    	next_meta.setPatterns(pattern);
+	    	next_meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
 	    	
 	    	next.setItemMeta(next_meta);
 	    	gui.setItem(32, next);
@@ -648,7 +666,7 @@ public class PlayerFunctions {
 	    			
 	    			InventoryView inv = p.getOpenInventory();
 	    			
-	    			if(inv.getTitle().equals(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "所有復活點")) {
+	    			if(inv.getTitle().equals(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "復活點目錄")) {
 	    				inv.setItem(34, watch);
 	    			}
 	    				    				
