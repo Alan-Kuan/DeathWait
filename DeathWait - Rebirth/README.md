@@ -6,7 +6,7 @@ This is a plugin about player death system for Minecraft Spigot server.
 
 ---
 
-Author: 小恩 Alan Kuan
+Author: 小恩(Alan Kuan)
 
 Version: 4.0
 
