@@ -11,20 +11,24 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import me.alan.deathwait.anvilgui.AnvilGUI;
-import me.alan.deathwait.anvilgui.AnvilGUI_v1_10_R1;
 import me.alan.deathwait.anvilgui.AnvilGUI_v1_11_R1;
 import me.alan.deathwait.anvilgui.AnvilGUI_v1_12_R1;
+import me.alan.deathwait.anvilgui.AnvilGUI_v1_13_R1;
+import me.alan.deathwait.anvilgui.AnvilGUI_v1_13_R2;
 import me.alan.deathwait.files.Config;
 import me.alan.deathwait.files.Data;
 import me.alan.deathwait.files.Spawns;
 import me.alan.deathwait.nms.NMS;
-import me.alan.deathwait.nms.v1_10_R1;
 import me.alan.deathwait.nms.v1_11_R1;
 import me.alan.deathwait.nms.v1_12_R1;
+import me.alan.deathwait.nms.v1_13_R1;
+import me.alan.deathwait.nms.v1_13_R2;
 
 /*************************
 
 	備註: 如果擔心Essentials的重生系統影響到，可在Essentials將respawn-listener-priority:設為lowest或none
+
+	1.13.2  畫面無法消失
 
 *************************/
 
@@ -56,15 +60,18 @@ public class Core extends JavaPlugin {
 	        WarningGen.Warn("在啟動插件時為了產生DeathWait資料夾而出了問題");
 		}
 		
-		if(Global.version.equals("v1_10_R1")){
-			anvil = new AnvilGUI_v1_10_R1();
-			nms = new v1_10_R1();
-		}else if(Global.version.equals("v1_11_R1")){
+		if(Global.version.equals("v1_11_R1")){
 			anvil = new AnvilGUI_v1_11_R1();
 			nms = new v1_11_R1();
 		}else if(Global.version.equals("v1_12_R1")){
 			anvil = new AnvilGUI_v1_12_R1();
 			nms = new v1_12_R1();
+		}else if(Global.version.equals("v1_13_R1")) {
+			anvil = new AnvilGUI_v1_13_R1();
+			nms = new v1_13_R1();
+		}else if(Global.version.equals("v1_13_R2")) {
+			anvil = new AnvilGUI_v1_13_R2();
+			nms = new v1_13_R2();
 		}
 		
 		config = new Config(this);
@@ -226,7 +233,7 @@ public class Core extends JavaPlugin {
 	    	return false;
 	    }
 	    
-	    if(!Global.version.equals("v1_10_R1") && !Global.version.equals("v1_11_R1") && !Global.version.equals("v1_12_R1")){
+	    if(!(Global.version.equals("v1_11_R1") || Global.version.equals("v1_12_R1") || Global.version.equals("v1_13_R1") || Global.version.equals("v1_13_R2"))){
 	    	return false;
 	    }
 	    

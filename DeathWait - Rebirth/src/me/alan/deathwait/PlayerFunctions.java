@@ -11,7 +11,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.enchantments.Enchantment;
@@ -64,22 +63,14 @@ public class PlayerFunctions {
 	public void Respawn(final Player p){
 				
 		boolean enable_custom_location = config.getConfig().getBoolean("config.enable custom location");
-		boolean enable_default_respawn_button = config.getConfig().getBoolean("config.display button of default respawn point");
-
+		
 		Location loc = getNormalSpawnPoint(p);
 		
 	    if(enable_custom_location){
-	    	
-	    	boolean custom_spawn_points_exist = false;
-	    	
-	    	//如果有自訂復活點
-	    	if(spawns.getConfig().isSet("spawns")) {
-	    		custom_spawn_points_exist = !spawns.getConfig().getConfigurationSection("spawns").getKeys(true).isEmpty();
-	    	}
-	    	
-    		//如果 有權限 且 有復活點可挑
-	    	if(p.hasPermission("dw.gui") && (enable_default_respawn_button || custom_spawn_points_exist)){
 
+    		//如果有權限開啟復活點目錄
+	    	if(p.hasPermission("dw.gui")){
+	    		
 	    	    int time_limit = config.getConfig().getInt("config.time limit of browsing the list");
 	    		
 	    		Global.addNoChoose(p);
@@ -353,8 +344,7 @@ public class PlayerFunctions {
 		
 	}
 	
-	@SuppressWarnings("deprecation")
-	public double getMaxHealth(Player p){
+	/*public double getMaxHealth(Player p){
 		
 		if(Global.version.equals("v1_10_R1")){
 			return p.getMaxHealth();
@@ -362,26 +352,18 @@ public class PlayerFunctions {
 			return p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
 		}
 		
-	}
+	}*/
 	
-	@SuppressWarnings("deprecation")
 	public void kickPassenger(Player p){
 		
-		if(Global.version.equals("v1_10_R1")){
-			p.getPassenger().teleport(p.getPassenger().getLocation());
-		}else{
-						
-			for(Entity passenger : p.getPassengers()){
+		for(Entity passenger : p.getPassengers()){
 				
-				passenger.teleport(passenger.getLocation());
+			passenger.teleport(passenger.getLocation());
 				
-			}
-			
 		}
 		
 	}
 
-	@SuppressWarnings("deprecation")
 	public void setNameTag(Player p){
 
 		if(!Global.isInTargetEntity(p)) {
@@ -395,11 +377,7 @@ public class PlayerFunctions {
 		    nametag.setMarker(true);
 		    nametag.addScoreboardTag("dw_nametag");
 		    
-			if(Global.version.equals("v1_10_R1")){
-				p.setPassenger(nametag);
-			}else{
-				p.addPassenger(nametag);
-			}
+			p.addPassenger(nametag);
 			
 	    }
 	    		
@@ -429,6 +407,7 @@ public class PlayerFunctions {
 	public void openSpawnList(final Player p, int page_num){
 		
 	    Inventory gui = Bukkit.createInventory(null, 36, ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "復活點目錄");
+	    
 	    boolean enable_default_respawn_button = config.getConfig().getBoolean("config.display button of default respawn point");
 	    
 	    //計算頁數
@@ -464,8 +443,8 @@ public class PlayerFunctions {
 	    	
 	    }
 
-    	//如果沒有任何復活點或沒有擁有任何復活點權限
-    	if(spawnpoints == 0 && !enable_default_respawn_button && Global.isGhost(p)) {
+    	//如果該幽靈(沒有任何復活點或沒有擁有任何復活點權限)且(沒有開啟預設復活點按鈕)
+    	if(Global.isGhost(p) && spawnpoints == 0 && !enable_default_respawn_button) {
     		
     	    removeNameTag(p);
     	    
@@ -667,24 +646,27 @@ public class PlayerFunctions {
 	    				    				
 	    			if(temp == 20){
 	    				
-    					p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+    					p.playSound(loc, Sound.valueOf("ENTITY_EXPERIENCE_ORB_PICKUP"), 1, 1);
     					
     				}else if(temp == 10){
     					
-    					p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+    					p.playSound(loc, Sound.valueOf("ENTITY_EXPERIENCE_ORB_PICKUP"), 1, 1);
     				    
     					new BukkitRunnable() {
     						
     						@Override
     						public void run() {
-    							p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+    							p.playSound(loc, Sound.valueOf("ENTITY_EXPERIENCE_ORB_PICKUP"), 1, 1);
     						}
     						
     					}.runTaskLater(core, 5);
     					
     				}else if(temp >= 1 && temp <= 5){
     					
-    					p.playSound(loc, Sound.BLOCK_NOTE_HARP, 1, 1);
+    					if(Global.version.equals("v1_11_R1") || Global.version.equals("v1_12_R1"))
+    						p.playSound(loc, Sound.valueOf("BLOCK_NOTE_HARP"), 1, 1);
+    					else
+    						p.playSound(loc, Sound.valueOf("BLOCK_NOTE_BLOCK_HARP"), 1, 1);
     					
     				}else if(temp == 0){
     					

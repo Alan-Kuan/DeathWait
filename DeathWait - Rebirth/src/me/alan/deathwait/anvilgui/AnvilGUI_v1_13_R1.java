@@ -1,33 +1,32 @@
 package me.alan.deathwait.anvilgui;
 
 import java.util.List;
-import me.alan.deathwait.ItemMaker;
-import net.minecraft.server.v1_10_R1.BlockPosition;
-import net.minecraft.server.v1_10_R1.ChatMessage;
-import net.minecraft.server.v1_10_R1.ContainerAnvil;
-import net.minecraft.server.v1_10_R1.EntityHuman;
-import net.minecraft.server.v1_10_R1.EntityPlayer;
-import net.minecraft.server.v1_10_R1.PacketPlayOutOpenWindow;
 
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_13_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-public class AnvilGUI_v1_10_R1 implements AnvilGUI{
-	
+import me.alan.deathwait.ItemMaker;
+import net.minecraft.server.v1_13_R1.BlockPosition;
+import net.minecraft.server.v1_13_R1.ChatMessage;
+import net.minecraft.server.v1_13_R1.ContainerAnvil;
+import net.minecraft.server.v1_13_R1.EntityHuman;
+import net.minecraft.server.v1_13_R1.EntityPlayer;
+import net.minecraft.server.v1_13_R1.PacketPlayOutOpenWindow;
+
+public class AnvilGUI_v1_13_R1 implements AnvilGUI{
+
 	ItemMaker im = new ItemMaker();
   
 	private class FakeAnvil extends ContainerAnvil{
 		
 		public FakeAnvil(EntityHuman entityHuman){
 			super(entityHuman.inventory, entityHuman.world, new BlockPosition(0, 0, 0), entityHuman);
+
+			this.checkReachable = false;
 		}
-    
-		@Override
-		public boolean a(EntityHuman entityHuman){
-			return true;
-		}
+		
 	}
   
 	public void openAnvil(Player p, String name, List<String> lore){
@@ -44,7 +43,7 @@ public class AnvilGUI_v1_10_R1 implements AnvilGUI{
 		entityPlayer.activeContainer.windowId = containerId;
     
 		Inventory inv = fakeAnvil.getBukkitView().getTopInventory();
-		
+
 		inv.setItem(0, im.createItem(Material.NAME_TAG, 0, name.replace("&", "/&").replace('¡±', '&'), lore, false));
 		
 	}

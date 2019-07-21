@@ -1,20 +1,20 @@
 package me.alan.deathwait.nms;
 
-import net.minecraft.server.v1_10_R1.IChatBaseComponent;
-import net.minecraft.server.v1_10_R1.PacketPlayOutCamera;
-import net.minecraft.server.v1_10_R1.PacketPlayOutChat;
-import net.minecraft.server.v1_10_R1.PacketPlayOutTitle;
-import net.minecraft.server.v1_10_R1.PlayerConnection;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_10_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_13_R2.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-public class v1_10_R1 implements NMS{
-	
+import net.minecraft.server.v1_13_R2.IChatBaseComponent;
+import net.minecraft.server.v1_13_R2.PacketPlayOutCamera;
+import net.minecraft.server.v1_13_R2.PacketPlayOutChat;
+import net.minecraft.server.v1_13_R2.PacketPlayOutTitle;
+import net.minecraft.server.v1_13_R2.PlayerConnection;
+
+public class v1_13_R2 implements NMS{
+
 	public void sendTitle(Player p, String text, int fade_in, int duration, int fade_out){
 		PlayerConnection c = ((CraftPlayer)p).getHandle().playerConnection;
     
@@ -46,7 +46,7 @@ public class v1_10_R1 implements NMS{
   
 	public void sendExample(Player p, String text, String command){
 		PlayerConnection c = ((CraftPlayer)p).getHandle().playerConnection;
-		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"" + text + "\",\"extra\":[{\"text\":\"[\",\"bold\":\"true\"},{\"text\":\"ฝdจา\",\"bold\":\"true\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"" + command + "\"}},{\"text\":\"]\",\"bold\":\"true\"}]}");
+		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"" + text + " \",\"extra\":[{\"text\":\"[\",\"bold\":\"true\"},{\"text\":\"ฝdจา\",\"bold\":\"true\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"" + command + "\"}},{\"text\":\"]\",\"bold\":\"true\"}]}");
 		PacketPlayOutChat packet = new PacketPlayOutChat(json);
 		c.sendPacket(packet);
 	}

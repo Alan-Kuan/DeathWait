@@ -5,6 +5,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
@@ -80,25 +81,21 @@ public class PlayerListener implements Listener{
 	public void onDeath(PlayerDeathEvent e){
 		
 		Player p = (Player) e.getEntity();
-		
+
 	    PlayerInventory inv = p.getInventory();
 
     	DamageCause cause = p.getLastDamageCause().getCause();
     	
 	    //確認玩家是否手持不死圖騰
-    	if(!Global.version.equals("v1_10_R1")){
-	    
-    		if(inv.getItemInMainHand().getType().equals(Material.TOTEM) || inv.getItemInOffHand().getType().equals(Material.TOTEM)) {
-    			
-    			//不死圖騰無法挽回原版/kill和掉入虛空的情況，同樣地，Essentials的/kill、/suicide等亦無法挽回
-    			if(!(cause.equals(DamageCause.VOID) || cause.equals(DamageCause.CUSTOM) || cause.equals(DamageCause.SUICIDE)))
-    				return;
-    			
-    		}
+    	if(inv.getItemInMainHand().getType().equals(Material.TOTEM) || inv.getItemInOffHand().getType().equals(Material.TOTEM)) {
+    		
+    		//不死圖騰無法挽回原版/kill和掉入虛空的情況，同樣地，Essentials的/kill、/suicide等亦無法挽回
+    		if(!(cause.equals(DamageCause.VOID) || cause.equals(DamageCause.CUSTOM) || cause.equals(DamageCause.SUICIDE)))
+    			return;
     		
     	}
-
-	    p.setHealth(pfunc.getMaxHealth(p));
+    	
+	    p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 	    p.setVelocity(new Vector(0, 0, 0));
 
 	    //如果玩家已經是幽靈，就不要做進一步的處理
