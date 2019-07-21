@@ -1,6 +1,7 @@
 package me.alan.deathwait.nms;
 
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 public abstract interface NMS{
@@ -16,6 +17,6 @@ public abstract interface NMS{
 	public abstract void sendLocation(Player p, String name, Location loc);
 	
 	//§ï¥Î Spigot ªº method
-	//public abstract void setSpectate(Player p, Entity ent);
+	public abstract void setSpectate(Player p, Entity ent);
 
 }

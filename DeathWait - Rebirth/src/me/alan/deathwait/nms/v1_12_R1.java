@@ -1,13 +1,16 @@
 package me.alan.deathwait.nms;
 
 import net.minecraft.server.v1_12_R1.IChatBaseComponent;
+import net.minecraft.server.v1_12_R1.PacketPlayOutCamera;
 import net.minecraft.server.v1_12_R1.PacketPlayOutChat;
 import net.minecraft.server.v1_12_R1.PacketPlayOutTitle;
 import net.minecraft.server.v1_12_R1.PlayerConnection;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 public class v1_12_R1 implements NMS{
@@ -55,9 +58,9 @@ public class v1_12_R1 implements NMS{
 		c.sendPacket(packet);
 	}
   
-	/*public void setSpectate(Player p, Entity ent){
+	public void setSpectate(Player p, Entity ent){
 		PacketPlayOutCamera packet = new PacketPlayOutCamera(((CraftEntity)ent).getHandle());
 		((CraftPlayer)p).getHandle().playerConnection.sendPacket(packet);
-	}*/
+	}
 	
 }

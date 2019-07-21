@@ -1,5 +1,5 @@
 package me.alan.deathwait;
-//
+
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -68,8 +68,8 @@ public class PlayerListener implements Listener{
 	    if(Global.isTargetEntity(ent)){
 	    	Player victim = (Player) Global.getPlayerInTargetEntity(ent);
 	    	
-	    	//nms.setSpectate(victim, victim);
-	    	victim.setSpectatorTarget(victim);
+	    	nms.setSpectate(victim, victim);
+	    	//victim.setSpectatorTarget(victim);
 	    	Global.removeTargetEntity(ent, victim);
 	    	pfunc.setNameTag(victim);
 	    }
@@ -86,13 +86,17 @@ public class PlayerListener implements Listener{
     	DamageCause cause = p.getLastDamageCause().getCause();
     	
 	    //確認玩家是否手持不死圖騰
-	    if(inv.getItemInMainHand().getType().equals(Material.TOTEM) || inv.getItemInOffHand().getType().equals(Material.TOTEM)) {
-	    	
-	    	//不死圖騰無法挽回原版/kill和掉入虛空的情況，同樣地，Essentials的/kill、/suicide等亦無法挽回
-	    	if(!(cause.equals(DamageCause.VOID) || cause.equals(DamageCause.CUSTOM) || cause.equals(DamageCause.SUICIDE)))
-	    		return;
-	    	
-	    }
+    	if(!Global.version.equals("v1_10_R1")){
+	    
+    		if(inv.getItemInMainHand().getType().equals(Material.TOTEM) || inv.getItemInOffHand().getType().equals(Material.TOTEM)) {
+    			
+    			//不死圖騰無法挽回原版/kill和掉入虛空的情況，同樣地，Essentials的/kill、/suicide等亦無法挽回
+    			if(!(cause.equals(DamageCause.VOID) || cause.equals(DamageCause.CUSTOM) || cause.equals(DamageCause.SUICIDE)))
+    				return;
+    			
+    		}
+    		
+    	}
 
 	    p.setHealth(pfunc.getMaxHealth(p));
 	    p.setVelocity(new Vector(0, 0, 0));
@@ -207,10 +211,10 @@ public class PlayerListener implements Listener{
 	    	
 	    	Entity killer = Global.getKiller(edbee.getDamager());
 	    	
-	    	//如果殺手存在 且 玩家不是殺手 且 殺手不是爆炸實體或落沙
+	    	//如果殺手存在 且 玩家自己不是殺手 且 殺手不是爆炸實體或落沙
 	    	if(killer != null && !p.equals(killer) && !Global.isExplosiveEntity(killer)) {
-	    		//nms.setSpectate(p, killer);
-	    		p.setSpectatorTarget(killer);
+	    		nms.setSpectate(p, killer);
+	    		//p.setSpectatorTarget(killer);
 	    		Global.addTargetEntity(killer, p);
 	    	}
 	    		    	
@@ -233,7 +237,7 @@ public class PlayerListener implements Listener{
 		    	@Override
 		    	public void run(){
 		    		
-		    		Global.setLeftWaitingTimes(p, temp);
+		    		Global.setLeftWaitingTime(p, temp);
 		    		
 		    		if(temp > 0){
 		    				
@@ -276,7 +280,7 @@ public class PlayerListener implements Listener{
 	public void onQuit(PlayerQuitEvent e){
 		
 		Player p = e.getPlayer();
-				
+		
 		//如果退出的玩家裡面有其他玩家的靈魂，靈魂被釋放
 		targetEntityCheck(p);
 	    
@@ -285,28 +289,36 @@ public class PlayerListener implements Listener{
 	    	
 	    	pfunc.removeNameTag(p);
 	    	
+	    	data.set("players." + p.getUniqueId() + ".is ghost", true);
+	    	
 	    	data.set("players." + p.getUniqueId() + ".gamemode", Global.getGameMode(p).toString());
 	    	
-	    	if(Global.hasLeftWaitingTimes(p)){
+	    	if(Global.hasLeftWaitingTime(p)){
 	    		
 		    	Global.cancelCountdownTask(p);
 		    	
-		    	data.set("players." + p.getUniqueId() + ".left waiting times", Global.getLeftWaitingTimes(p));
+		    	data.set("players." + p.getUniqueId() + ".left waiting time", Global.getLeftWaitingTime(p));
 		    	
-		    	Global.removeLeftWaitingTimes(p);
+		    	Global.removeLeftWaitingTime(p);
 	    	}
 
 	    	Global.removeGameMode(p);
 			Global.removeGhost(p);
 			
 			if(Global.isInTargetEntity(p)){
-				for(Entity target: Global.getTargetEntities()){
-
-					if(Global.getPlayerInTargetEntity(target).equals(p)){
-						Global.removeTargetEntity(target, p);
-					}
-				}
+				Entity target = Global.getTargetEntity(p);
+				data.set("players." + p.getUniqueId() + ".target entity", target.getUniqueId().toString());
+				Global.removeTargetEntity(target, p);
 			}
+			
+			//如果正在選擇復活點
+			if(Global.didNotChoose(p)) {
+				data.set("players." + p.getUniqueId() + ".is browsing spawn list", true);
+				Global.removeNoChoose(p);
+			}else {
+				data.set("players." + p.getUniqueId() + ".is browsing spawn list", false);
+			}
+			
 	    }
 	    
 	}
@@ -316,70 +328,125 @@ public class PlayerListener implements Listener{
 				
 		Player p = e.getPlayer();
 		
-		boolean have_to_wait = data.getConfig().isSet("players." + p.getUniqueId() + ".left waiting times");
+		boolean is_ghost = data.getConfig().isSet("players." + p.getUniqueId() + ".is ghost");
 		
-		if(have_to_wait){
+		boolean is_browsing = data.getConfig().getBoolean("players." + p.getUniqueId() + ".is browsing spawn list");
+		
+		if(is_ghost){
 			
 			boolean allow_moving = config.getConfig().getBoolean("config.allow moving in ghost mode");
 
 			Global.addGhost(p);
+			
+			data.set("players." + p.getUniqueId() + ".is ghost", null);
+			
 			Global.setGameMode(p, GameMode.valueOf(data.getConfig().getString("players." + p.getUniqueId() + ".gamemode")));
 			
 			data.set("players." + p.getUniqueId() + ".gamemode", null);
-			
+
 			new BukkitRunnable(){
 
 		    	@Override
 		    	public void run(){
 		    		
-					//顯示名條		    
-				    pfunc.setNameTag(p);
-
-	    		if(allow_moving){
+				    if(allow_moving){
 						p.setFlySpeed(0.1f);
 					}else{
 						p.setFlySpeed(0);
 					}
+
+					String uuid_of_target_entity = "";
+					
+					if(data.getConfig().isSet("players." + p.getUniqueId() + ".target entity")) {
+					
+						uuid_of_target_entity = data.getConfig().getString("players." + p.getUniqueId() + ".target entity");
+					
+						//如果玩家待的target entity還在附近，就把玩家塞回去
+						for(Entity ent : p.getNearbyEntities(10.0, 10.0, 10.0)) {
+							
+							if(ent.getUniqueId().toString().equals(uuid_of_target_entity)) {
+								nms.setSpectate(p, ent);
+								Global.addTargetEntity(ent, p);
+								data.set("players." + p.getUniqueId() + ".target entity", null);
+								break;
+							}
+							
+						}
+						
+					}
+					
+					//顯示名條
+					if(!Global.isInTargetEntity(p))
+					    pfunc.setNameTag(p);
 		    		
 		    	}
 		    	
 			}.runTaskLater(core, 2);
     		
-			int left = data.getConfig().getInt("players." + p.getUniqueId() + ".left waiting times");
-			
-			nms.sendTitle(p, ChatColor.RED + "上次登出時仍在等待復活", 0, left*20, 0);
-			
-			BukkitTask countdown_task = new BukkitRunnable(){
+			//如果離開時正在瀏覽復活點目錄
+			if(is_browsing) {
 
-				int temp = left;
+	    	    int time_limit = config.getConfig().getInt("config.time limit of browsing the list");
+	    		
+	    		Global.addNoChoose(p);
+	    		
+	    		new BukkitRunnable() {
+
+	    			@Override
+	    			public void run(){
+	    				
+	    				pfunc.openSpawnList(p, 1);
+	    				
+	    			}
+	    			
+	    		}.runTaskLater(core, 1);
+	    		
+				if(time_limit > 0) {
+					pfunc.choosingCountDown(p, time_limit);
+				}
 				
-		    	@Override
-		    	public void run(){
+				data.set("players." + p.getUniqueId() + ".is browsing spawn list", null);
+				
+			}else {
 
-		    		Global.setLeftWaitingTimes(p, temp);
-		    		
-		    		if(temp > 0){
-		    			
-		    			String show = temp + "秒後復活";
-		    				
-		    			nms.sendSubTitle(p, ChatColor.GOLD + show, 0, 25, 0);
-		    				
-		    			temp--;
-		    			
-		    		}else{
-		    			cancel();
-		    			data.set("players." + p.getUniqueId() + ".left waiting times", null);
-		    			pfunc.Respawn(p);
-		    		}
-		    		
-		    	}
-		    	
-			}.runTaskTimer(core, 0, 20);
-			
-			Global.addCountdownTask(p, countdown_task);
-			
+				p.sendMessage(Global.Header + ChatColor.DARK_RED + "上次離開時仍在等待復活");
+				
+				int left = data.getConfig().getInt("players." + p.getUniqueId() + ".left waiting time");
+				
+				nms.sendTitle(p, ChatColor.RED + "你已經死了", 0, left*20, 0);
+				
+				BukkitTask countdown_task = new BukkitRunnable(){
+
+					int temp = left;
+					
+			    	@Override
+			    	public void run(){
+
+			    		Global.setLeftWaitingTime(p, temp);
+			    		
+			    		if(temp > 0){
+			    			
+			    			String show = temp + "秒後復活";
+			    				
+			    			nms.sendSubTitle(p, ChatColor.GOLD + show, 0, 25, 0);
+			    				
+			    			temp--;
+			    			
+			    		}else{
+			    			cancel();
+			    			data.set("players." + p.getUniqueId() + ".left waiting time", null);
+			    			pfunc.Respawn(p);
+			    		}
+			    		
+			    	}
+			    	
+				}.runTaskTimer(core, 0, 20);
+				
+				Global.addCountdownTask(p, countdown_task);
+				
+			}
 		}
-		
+			
 	}
 	
 	//當玩家使用蹲下來求救

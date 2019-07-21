@@ -179,15 +179,10 @@ public class PlayerFunctions {
 		
 		if(Global.isInTargetEntity(p)){
 
-			//nms.setSpectate(p, p);
-			p.setSpectatorTarget(p);
+			nms.setSpectate(p, p);
+			//p.setSpectatorTarget(p);
 			
-			for(Entity target: Global.getTargetEntities()){
-
-				if(Global.getPlayerInTargetEntity(target).equals(p)){
-					Global.removeTargetEntity(target, p);
-				}
-			}
+			Global.removeTargetEntity(Global.getTargetEntity(p), p);
 		}
 
 		p.setGameMode(Global.getGameMode(p));
@@ -414,7 +409,7 @@ public class PlayerFunctions {
 
 		if(!Global.isInTargetEntity(p)) {
 			
-			for(Entity ent : p.getNearbyEntities(0.5, 1, 0.5)) {
+			for(Entity ent : p.getNearbyEntities(2, 2, 2)) {
 				
 				if(ent.getCustomName() == null || ent.getScoreboardTags().isEmpty())
 					continue;
@@ -653,7 +648,7 @@ public class PlayerFunctions {
 	    	public void run(){
 	    		
 	    		//如果還沒選復活點，顯示倒數
-	    		if(Global.didNotChoose(p)){
+	    		if(Global.didNotChoose(p) && p.isOnline()){
 	    			
 	    			ItemStack watch = im.createItem(Material.WATCH, 0, ChatColor.DARK_RED + "你還剩下" + temp + "秒選擇", lore, false);
 					

@@ -1,7 +1,6 @@
 package me.alan.deathwait;
 
 import java.util.List;
-import java.util.Set;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -9,11 +8,9 @@ import java.util.HashMap;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Egg;
-import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -22,10 +19,8 @@ import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.Snowball;
 import org.bukkit.entity.SpectralArrow;
 import org.bukkit.entity.SplashPotion;
-import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.TippedArrow;
 import org.bukkit.entity.WitherSkull;
-import org.bukkit.entity.minecart.ExplosiveMinecart;
 import org.bukkit.scheduler.BukkitTask;
 
 public class Global {
@@ -152,20 +147,20 @@ public class Global {
 		time_limit_task.remove(p);
 	}
 	
-	public static boolean hasLeftWaitingTimes(Player p){
+	public static boolean hasLeftWaitingTime(Player p){
 		return wait.containsKey(p);
 	}
-	public static int getLeftWaitingTimes(Player p){
+	public static int getLeftWaitingTime(Player p){
 		return wait.get(p);
 	}
-	public static void setLeftWaitingTimes(Player p, int time){
+	public static void setLeftWaitingTime(Player p, int time){
 		if(wait.containsKey(p)){
 			wait.replace(p, time);
 		}else{
 			wait.put(p, time);
 		}
 	}
-	public static void removeLeftWaitingTimes(Player p){
+	public static void removeLeftWaitingTime(Player p){
 		wait.remove(p);
 	}
 	
@@ -179,8 +174,12 @@ public class Global {
 	public static Player getPlayerInTargetEntity(Entity target){
 		return target_entity.get(target);
 	}
-	public static Set<Entity> getTargetEntities(){
-		return target_entity.keySet();
+	public static Entity getTargetEntity(Player p){
+		for(Entity ent : target_entity.keySet()) {
+			if(target_entity.get(ent).equals(p))
+				return ent;
+		}
+		return null;
 	}
 	public static void addTargetEntity(Entity target, Player p){
 		target_entity.put(target, p);
@@ -216,9 +215,8 @@ public class Global {
 	}
 	
 	public static boolean isExplosiveEntity(Entity ent) {
-		
-		return (ent instanceof Creeper) && (ent instanceof EnderCrystal) && (ent instanceof FallingBlock) && (ent instanceof TNTPrimed) && (ent instanceof ExplosiveMinecart);
-				
+		EntityType type = ent.getType();
+		return type.equals(EntityType.CREEPER) || type.equals(EntityType.ENDER_CRYSTAL) || type.equals(EntityType.FALLING_BLOCK) || type.equals(EntityType.PRIMED_TNT) || type.equals(EntityType.MINECART_TNT) || type.equals(EntityType.LIGHTNING);	
 	}
 	
 }
