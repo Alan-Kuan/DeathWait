@@ -1,4 +1,4 @@
-# DeathWait死亡等待    !更新中 Updating!
+# DeathWait死亡等待
 
 這是一個為Minecraft Spigot伺服器設計的死亡系統插件。
 
