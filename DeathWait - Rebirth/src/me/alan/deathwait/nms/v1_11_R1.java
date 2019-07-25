@@ -15,7 +15,7 @@ import net.minecraft.server.v1_11_R1.PacketPlayOutTitle;
 import net.minecraft.server.v1_11_R1.PlayerConnection;
 
 public class v1_11_R1 implements NMS{
-	
+
 	public void sendTitle(Player p, String text, int fade_in, int duration, int fade_out){
 		PlayerConnection c = ((CraftPlayer)p).getHandle().playerConnection;
     
@@ -47,14 +47,14 @@ public class v1_11_R1 implements NMS{
   
 	public void sendExample(Player p, String text, String command){
 		PlayerConnection c = ((CraftPlayer)p).getHandle().playerConnection;
-		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"" + text + "\",\"extra\":[{\"text\":\"[\",\"bold\":\"true\"},{\"text\":\"範例\",\"bold\":\"true\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"" + command + "\"}},{\"text\":\"]\",\"bold\":\"true\"}]}");
+		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"" + text + " \",\"extra\":[{\"text\":\"[\",\"bold\":\"true\"},{\"text\":\"範例\",\"bold\":\"true\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"" + command + "\"}},{\"text\":\"]\",\"bold\":\"true\"}]}");
 		PacketPlayOutChat packet = new PacketPlayOutChat(json);
 		c.sendPacket(packet);
 	}
   
 	public void sendLocation(Player p, String name, Location loc){
 		PlayerConnection c = ((CraftPlayer)p).getHandle().playerConnection;
-		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"" + ChatColor.GOLD + "[DeathWait]" + "§a成功設置復活點 \",\"extra\":[{\"text\":\"[\",\"bold\":\"true\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§6所處世界: " + loc.getWorld().getName() + " \n§aX座標: " + loc.getX() + " \n§aY座標: " + loc.getY() + " \n§aZ座標: " + loc.getZ() + "\"}},{\"text\":\"§r" + name + "\",\"bold\":\"true\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§6所處世界: " + loc.getWorld().getName() + " \n§aX座標: " + loc.getX() + " \n§aY座標: " + loc.getY() + " \n§aZ座標: " + loc.getZ() + "\"}},{\"text\":\"]\",\"bold\":\"true\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§6所處世界: " + loc.getWorld().getName() + " \n§aX座標: " + loc.getX() + " \n§aY座標: " + loc.getY() + " \n§aZ座標: " + loc.getZ() + "\"}}]}");
+		IChatBaseComponent json = IChatBaseComponent.ChatSerializer.a("{\"text\":\"" + ChatColor.GOLD + "[DeathWait]" + "§a成功設置復活點 \",\"extra\":[{\"text\":\"§f§l[\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§6所處世界: " + loc.getWorld().getName() + " \n§aX座標: " + loc.getX() + " \n§aY座標: " + loc.getY() + " \n§aZ座標: " + loc.getZ() + "\"}},{\"text\":\"§r" + name + "\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§l§6所處世界: " + loc.getWorld().getName() + " \n§aX座標: " + loc.getX() + " \n§aY座標: " + loc.getY() + " \n§aZ座標: " + loc.getZ() + "\"}},{\"text\":\"§r§l]\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§6所處世界: " + loc.getWorld().getName() + " \n§aX座標: " + loc.getX() + " \n§aY座標: " + loc.getY() + " \n§aZ座標: " + loc.getZ() + "\"}}]}");
 		PacketPlayOutChat packet = new PacketPlayOutChat(json);
 		c.sendPacket(packet);
 	}
