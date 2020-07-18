@@ -10,6 +10,6 @@ Author: 小恩(Alan Kuan)
 
 Version: 4.0
 
-Post of this plugin: https://forum.gamer.com.tw/Co.php?bsn=18673&sn=779195
+Introduction: https://forum.gamer.com.tw/C.php?bsn=18673&snA=177422&tnum=1&subbsn=14
 
 ---
